@@ -21,7 +21,7 @@ Note: support for *certificates* & *connections* will be added soon.
 
 ### From the Powershell Gallery 
 
-```
+```Powershell
     Install-Module -Name AzureAutomationTools.PackageManagement
 ```
 #### Requirements
@@ -58,16 +58,20 @@ The file assets.json contains
 
 ### Sample files
 
-Specifying the **-IncludeSamples** switch will samples files in the package
+Specifying the **-IncludeSamples** switch will create sample files in the package
 
 ```Powershell
     New-AatAutomationPackage -Name 'monkey' -IncludeSamples
 ```
 
+will additionally create 
+
 ```Powershell
     .\monkey\assets\sample-assets.json    
 
 ```
+
+sample-assets.json will contains something similar to:
 
 ```JSON
     {
@@ -133,11 +137,15 @@ Credentials must be added manually to an assets file.
     }
 ```
 
+e.g.
+
 ```JSON
     {
         "Credentials": [
-            "Name" :  "ExampleCredential",
-            "UserName" : "user@example.com"    
+            {
+                "Name" :  "ExampleCredential",
+                "UserName" : "user@example.com"    
+            }
         ],
         "Variables": []
     }

@@ -190,9 +190,7 @@ function New-AutomationPackage {
         [Switch]$IncludeSamples
     )
     
-    if($PSCmdlet.ShouldProcess("$Name",'Create automation package' )){                
-        ##TODO Check if the current folder looks like a package folder.
-
+    if($PSCmdlet.ShouldProcess("$Name",'Create automation package' )){                        
         $Path = Get-WorkingFolder
                     
         Write-Verbose "Creating package folder [$Name] in '$Path' ..."
@@ -201,16 +199,16 @@ function New-AutomationPackage {
                 
         if(Test-Path -Path $RootPath){
             if((Get-ChildItem -Path $RootPath)){
-                throw "Cannot create package folder  - path [$RootPath] aleady exists and is not empty."
+                throw "Cannot create package folder - path [$RootPath] aleady exists and is not empty."
             } 
         } else {
             New-Item -Path $RootPath -ItemType 'Directory' | Out-Null
             Set-WorkingPackage -PackageName $Name
         }
 
-        $AssetsPath = GetPackageFolderPath -Assets        
-        $ModulesPath = (Join-Path -Path $RootPath -ChildPath $Script:Options.ModulesFolderName)
-        $RunbooksPath = (Join-Path -Path $RootPath -ChildPath $Script:Options.RunbooksFolderName)
+        $AssetsPath = Get-PackageFolderPath -Assets        
+        $ModulesPath = Get-PackageFolderPath -Modules
+        $RunbooksPath = Get-PackageFolderPath -Runbooks
 
         $AssetsPath, $ModulesPath, $RunbooksPath | ForEach-Object {
             if($_ -ne $RootPath){
@@ -436,7 +434,7 @@ function New-AssetsFile{
             $Assets.Add($Script:ConnectionsPropertyName, @())
         }
         
-        $AssetsFilePath = Join-Path -Path (GetPackageFolderPath -Assets) -ChildPath $Name
+        $AssetsFilePath = Join-Path -Path (Get-PackageFolderPath -Assets) -ChildPath $Name
 
         Write-Verbose -Message "Creating assets file '$AssetsFilePath' ..."
 
@@ -521,7 +519,7 @@ function Add-VariableDefinition{
         
         Write-verbose -Message "Assets file: [$AssetsFileName]"
         
-        $AssetsFolderPath  = (GetPackageFolderPath -Assets)
+        $AssetsFolderPath  = (Get-PackageFolderPath -Assets)
         $AssetsFilePath  = Join-Path -Path $AssetsFolderPath -ChildPath $AssetsFileName
 
         Write-verbose -Message "Assets file path: '$AssetsFilePath'"

@@ -203,8 +203,9 @@ function New-AutomationPackage {
             } 
         } else {
             New-Item -Path $RootPath -ItemType 'Directory' | Out-Null
-            Set-WorkingPackage -PackageName $Name
         }
+        
+        Set-WorkingPackage -PackageName $Name
 
         $AssetsPath = Get-PackageFolderPath -Assets        
         $ModulesPath = Get-PackageFolderPath -Modules

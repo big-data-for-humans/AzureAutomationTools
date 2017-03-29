@@ -34,7 +34,7 @@ class PackageTestResult {
     }
 }
 
-function Get-WorkingFolder{
+function Get-WorkingFolder {
     $ret = $Script:WorkingFolder 
 
     if(-not $Script:WorkingFolder){
@@ -44,8 +44,8 @@ function Get-WorkingFolder{
     $ret
 }
 
-function Set-WorkingFolder{
-    [CmdletBinding(SupportsShouldProcess=$true, ConfirmImpact='Medium')]
+function Set-WorkingFolder {
+    [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'Medium')]
     param (
         [Parameter(Mandatory=$true)]
         [ValidateNotNullOrEmpty()]
@@ -57,7 +57,7 @@ function Set-WorkingFolder{
     }
 }
 
-function Get-WorkingPackage{
+function Get-WorkingPackage {
         
     $ret = $Script:WorkingPackage
 
@@ -68,8 +68,8 @@ function Get-WorkingPackage{
     $ret
 }
 
-function Set-WorkingPackage{
-    [CmdletBinding(SupportsShouldProcess=$true, ConfirmImpact='Medium')]
+function Set-WorkingPackage {
+    [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'Medium')]
     param (
         [Parameter(Mandatory=$true)]
         [ValidateNotNullOrEmpty()]
@@ -727,46 +727,6 @@ function DeployModules {
     }
 }
 
-<#
-    .SYNOPSIS
-        Deploys automation resources: runbooks, modules and assets (variables & credentials)
-
-    .DESCRIPTION
-        Deploys automation resources: runbooks, modules and assets (variables & credentials) to an automation
-        account.
-        
-    .PARAMETER DeployRunbooks  
-        Deploys runbooks. Default is false
-     
-    .PARAMETER DeployModules  
-        Deploys modules. Default is false
-     
-    .PARAMETER DeployVariables  
-        Deploys assets. Default is false
-    
-    .PARAMETER DeployCredentials  
-        Deploys credentials. Default is false
-    
-    .PARAMETER NewCredentialsOnly  
-        Deploys only new credentials, if DeployCredentials is specified. Default is false
-        
-    .PARAMETER JsonAssetDepth 
-        Override this if the nested level is greather than 4 (count the curly braces). Default is 4
-
-    .PARAMETER Paths
-        The paths to deploy - if ommitted all folders at the root level (except deploy) will be searched for the specified
-        automation resources.
-
-    .PARAMETER RunbooksFilter
-        Filter for Runbooks - Default *.ps1 
-
-    .PARAMETER AssetsFilter
-        Filter for Assets - Default *.json  
-
-    .EXAMPLE  
-
-    Publish-AutomationPackage 
-#>
 function Publish-AutomationPackage {
     [CmdletBinding(SupportsShouldProcess=$true, ConfirmImpact='High')]    
     param (

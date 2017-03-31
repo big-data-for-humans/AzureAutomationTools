@@ -4,213 +4,136 @@ online version:
 schema: 2.0.0
 ---
 
-# Publish-AutomationPackage
+# New-AatPackageVariable
 
 ## SYNOPSIS
-
-Publish automation resources: runbooks, modules and assets (variables & credentials)
+Creates a new variable.
 
 ## SYNTAX
 
+### Plain
 ```
-Publish-AutomationPackage [-ResourceGroupName] <String> [-AutomationAccountName] <String> 
-[[-Paths] <String[]>] [-DeployRunbooks] [-DeployModules] [-DeployVariables] [-DeployCredentials] [-NewCredentialsOnly]
-[[-JsonAssetDepth] <Int32>] [[-RunbookFilter] <String>] [[-AssetsFilter] <String>] [-WhatIf] [-Confirm]
+New-AatPackageVariable [-Name <String>] -Value <Object> [-AsJson] [-WhatIf] [-Confirm] [<CommonParameters>]
+```
+
+### Encrypted
+```
+New-AatPackageVariable [-Name <String>] [-IsEncrypted] [-AsJson] [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
+Creates a new variable.
 
-Publish automation resources: runbooks, modules and assets (variables & credentials) to an automation
-account.
+## EXAMPLES
 
-## EXAMPLES 1: Publish all packages 
+### Example 1: Create a variable
+```
+PS C:\> New-AatPackageVariable -Name var -Value 1
 
-```Powershell
-PS C:\> Publish-AatAutomationPackage -ResourceGroupName rg -AutomationAccountName aa 
+Name IsEncrypted Value
+---- ----------- -----
+var        False     1
+```
+
+### Example 2: Create an encrypted variable
+```
+PS C:\> New-AatPackageVariable -Name var -IsEncrypted
+
+Name IsEncrypted Value
+---- ----------- -----
+var         True
+```
+
+Note: Values are not supported for encypted variables. These must be set securely after publishing.
+
+### Example 3: Create a variable as json
+```
+PS C:\> New-AatPackageVariable -Name var -Value 1 -AsJson
+{
+    "Name":  "var",
+    "IsEncrypted":  false,
+    "Value":  1
+}
 ```
 
 ## PARAMETERS
 
-### -ResourceGroupName
-
-Name of resource group to publish to.
+### -AsJson
+Specifies that the variable is returned as json instead of PSCustomObject.
 
 ```yaml
-Type: String
+Type: SwitchParameter
 Parameter Sets: (All)
+Aliases: 
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Confirm
+Prompts you for confirmation before running the cmdlet.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases: cf
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -IsEncrypted
+Specifies that the variable is encrypted.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: Encrypted
 Aliases: 
 
 Required: True
-Position: 1
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -AutomationAccountName
-
-Name of automation account to publish to.
+### -Name
+Specifies the name of the variable.
 
 ```yaml
 Type: String
 Parameter Sets: (All)
+Aliases: 
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Value
+Specifies the value of the variable.
+
+```yaml
+Type: Object
+Parameter Sets: Plain
 Aliases: 
 
 Required: True
-Position: 2
+Position: Named
 Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Paths
-
-The paths to deploy - if ommitted all folders at the root level (except deploy) will be searched for the specified
-automation resources.
-
-```yaml
-Type: String[]
-Parameter Sets: (All)
-Aliases: 
-
-Required: False
-Position: 3
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -DeployRunbooks
-
-Publish runbooks.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases: 
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -DeployModules
-
-Publish modules.
-
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases: 
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -DeployVariables
-
-Publish assets.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases: 
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -DeployCredentials
-
-Publish credentials.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases: 
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -NewCredentialsOnly
-
-Publish only new credentials.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases: 
-
-Required: False
-Position: Named
-Default value: False
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -JsonAssetDepth
-
-The depth to use when converting objects to json.
-
-```yaml
-Type: Int32
-Parameter Sets: (All)
-Aliases: 
-
-Required: False
-Position: 4
-Default value: 4
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -RunbookFilter
-
-Only runbooks matching the filter will be published.
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases: 
-
-Required: False
-Position: 5
-Default value: *.ps1
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -AssetsFilter
-
-Only assets in files matching the filter will be published.
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases: 
-
-Required: False
-Position: 6
-Default value: *.json
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
 ### -WhatIf
-
 Shows what would happen if the cmdlet runs.
 The cmdlet is not run.
 
@@ -226,21 +149,8 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -Confirm
-
-Prompts you for confirmation before running the cmdlet.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases: cf
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
+### CommonParameters
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see about_CommonParameters (http://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 
@@ -248,9 +158,14 @@ Accept wildcard characters: False
 
 ## OUTPUTS
 
-### None
+### System.Management.Automation.PSCustomObject
 
+### System.String
 <!--## NOTES-->
 
 <!--## RELATED LINKS-->
+
+## NOTES
+
+## RELATED LINKS
 

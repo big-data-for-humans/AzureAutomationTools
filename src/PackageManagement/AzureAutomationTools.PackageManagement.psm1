@@ -64,7 +64,7 @@ function Get-AatWorkingPackage {
     $ret = $Script:WorkingPackage
 
     if(-not $Script:WorkingPackage){        
-        $ret = (Get-ChildItem -Directory -Path (Get-WorkingFolder) | Sort-Object Name | Select-Object -First 1 -ExpandProperty Name)
+        $ret = (Get-ChildItem -Directory -Path (Get-AatWorkingFolder) | Sort-Object Name | Select-Object -First 1 -ExpandProperty Name)
     }
 
     $ret
@@ -79,8 +79,8 @@ function Set-AatWorkingPackage {
     )
 
     if($PSCmdlet.ShouldProcess("$PackageName",'Set working package' )){            
-        if(-not (Test-Path -Path (Join-path -Path (Get-WorkingFolder) -ChildPath $PackageName))){
-            throw "Cannot set working package to [$PackageName] - the folder does not exist in [$(Get-WorkingFolder)]"
+        if(-not (Test-Path -Path (Join-path -Path (Get-AatWorkingFolder) -ChildPath $PackageName))){
+            throw "Cannot set working package to [$PackageName] - the folder does not exist in [$(Get-AatWorkingFolder)]"
         }    
 
         $Script:WorkingPackage = $PackageName
@@ -152,8 +152,8 @@ function Get-AatPackagePath {
     [CmdletBinding(PositionalBinding = $false)]
     param()    
     
-    $WorkingFolderPath = Get-WorkingFolder
-    $PackageName = Get-WorkingPackage
+    $WorkingFolderPath = Get-AatWorkingFolder
+    $PackageName = Get-AatWorkingPackage
     $PackagePath = (Join-Path -Path $WorkingFolderPath -ChildPath $PackageName)
     $PackagePath
 }
@@ -170,7 +170,7 @@ function Get-AatPackageFolderPath {
     )
 
     $ret = $null
-    $PackagePath = Get-PackagePath
+    $PackagePath = Get-AatPackagePath
     $FolderName = $null
     
     switch ($true) {
@@ -200,7 +200,7 @@ function New-AatAutomationPackage {
     )
     
     if($PSCmdlet.ShouldProcess("$Name",'Create automation package' )){                        
-        $Path = Get-WorkingFolder
+        $Path = Get-AatWorkingFolder
                     
         Write-Verbose "Creating package folder [$Name] in '$Path' ..."
         
@@ -214,11 +214,11 @@ function New-AatAutomationPackage {
             New-Item -Path $RootPath -ItemType 'Directory' | Out-Null
         }
         
-        Set-WorkingPackage -PackageName $Name
+        Set-AatWorkingPackage -PackageName $Name
 
-        $AssetsPath = Get-PackageFolderPath -Assets        
-        $ModulesPath = Get-PackageFolderPath -Modules
-        $RunbooksPath = Get-PackageFolderPath -Runbooks
+        $AssetsPath = Get-AatPackageFolderPath -Assets        
+        $ModulesPath = Get-AatPackageFolderPath -Modules
+        $RunbooksPath = Get-AatPackageFolderPath -Runbooks
 
         $AssetsPath, $ModulesPath, $RunbooksPath | ForEach-Object {
             if($_ -ne $RootPath){
@@ -231,16 +231,16 @@ function New-AatAutomationPackage {
         }
         
         if(-not $DontCreateAssetsFile.IsPresent){
-            New-AssetsFile -Name $Script:Options.AssetsFileName -IncludeVariables -IncludeCredentials
+            New-AatAssetsFile -Name $Script:Options.AssetsFileName -IncludeVariables -IncludeCredentials
         }
 
         if($IncludeSamples.IsPresent){
             Write-Verbose "Creating samples ..."
             
             $SampleAssetsFileName = 'sample-assets.json'         
-            New-AssetsFile -Name $SampleAssetsFileName -All
-            Add-VariableDefinition -AssetsFileName $SampleAssetsFileName -Name 'simple-plaintext-variable'  -Value 'lorem'
-            Add-VariableDefinition -AssetsFileName $SampleAssetsFileName -Name 'simple-encrypted-variable'  -IsEncrypted
+            New-AatAssetsFile -Name $SampleAssetsFileName -All
+            Add-AatPackageVariable -AssetsFileName $SampleAssetsFileName -Name 'simple-plaintext-variable'  -Value 'lorem'
+            Add-AatPackageVariable -AssetsFileName $SampleAssetsFileName -Name 'simple-encrypted-variable'  -IsEncrypted
             $Object = @{
                 SimpleProperty = 'Lorem';
                 ComplexProperty = @{
@@ -248,7 +248,7 @@ function New-AatAutomationPackage {
                     Dolor = 'monkey'
                 }
             }
-            Add-VariableDefinition -AssetsFileName $SampleAssetsFileName -Name 'object-variable' $Object
+            Add-AatPackageVariable -AssetsFileName $SampleAssetsFileName -Name 'object-variable' $Object
             Write-Verbose "Creating samples - done."
         }
 
@@ -256,7 +256,7 @@ function New-AatAutomationPackage {
     }
 }
 
-function Test-AutomationPackage {
+function Test-AatAutomationPackage {
     [CmdletBinding(PositionalBinding = $false)]
     param(    
         [Parameter(Mandatory=$false)]
@@ -266,31 +266,31 @@ function Test-AutomationPackage {
     )
 
     [PackageTestResult[]]$TestResults = @()
-    $WorkingFolder = Get-WorkingFolder
+    $WorkingFolder = Get-AatWorkingFolder
 
     Write-Verbose -Message "Working folder: '$WorkingFolder)'"    
 
     if(-not $PackageName){
-        $PackageName = Get-WorkingPackage
+        $PackageName = Get-AatWorkingPackage
     }
 
     Write-Verbose -Message "Testing package: [$PackageName]"
 
     Write-Verbose -Message 'Testing package folders ...'
 
-    $AssetsPath = Get-PackageFolderPath -Assets
+    $AssetsPath = Get-AatPackageFolderPath -Assets
 
     if(-not (Test-Path -Path $AssetsPath)){
         $TestResults += New-Object -TypeName PackageTestResult -ArgumentList "Package folder [Assets] '$AssetsPath' not found", 'Error'
     }
 
-    $ModulesPath = Get-PackageFolderPath -Modules
+    $ModulesPath = Get-AatPackageFolderPath -Modules
 
     if(-not (Test-Path -Path $ModulesPath)){
         $TestResults += New-Object -TypeName PackageTestResult -ArgumentList "Package folder [Modules] '$ModulesPath' not found", 'Error'
     }
     
-    $RunbooksPath = Get-PackageFolderPath -Runbooks
+    $RunbooksPath = Get-AatPackageFolderPath -Runbooks
 
     if(-not (Test-Path -Path $RunbooksPath)){
         $TestResults += New-Object -TypeName PackageTestResult -ArgumentList "Package folder [Runbooks] '$RunbooksPath' not found", 'Error'
@@ -445,7 +445,7 @@ function New-AatAssetsFile{
             $Assets.Add($Script:ConnectionsPropertyName, @())
         }
         
-        $AssetsFilePath = Join-Path -Path (Get-PackageFolderPath -Assets) -ChildPath $Name
+        $AssetsFilePath = Join-Path -Path (Get-AatPackageFolderPath -Assets) -ChildPath $Name
 
         Write-Verbose -Message "Creating assets file '$AssetsFilePath' ..."
 
@@ -459,7 +459,7 @@ function New-AatAssetsFile{
     }
 }
 
-function New-AatVariableDefinition{
+function New-AatPackageVariable{
     [CmdletBinding(SupportsShouldProcess=$true, ConfirmImpact='Low', PositionalBinding=$false)]    
     param (
         [Parameter(Mandatory=$false)]
@@ -490,7 +490,7 @@ function New-AatVariableDefinition{
     }
 }
 
-function Add-VariableDefinition{
+function Add-AatPackageVariable{
     [CmdletBinding(SupportsShouldProcess=$true, ConfirmImpact='Low', PositionalBinding = $false)]    
     param (
         [Parameter(Mandatory=$true)]
@@ -519,10 +519,10 @@ function Add-VariableDefinition{
             $NewVariableParams.Add('IsEncrypted', $IsEncrypted.IsPresent)
         }
         
-        $Variable = New-VariableDefinition @NewVariableParams
+        $Variable = New-AatPackageVariable @NewVariableParams
 
-        Write-verbose -Message "Working folder: '$(Get-WorkingFolder)'"
-        Write-verbose -Message "Working package: [$(Get-WorkingPackage)]"
+        Write-verbose -Message "Working folder: '$(Get-AatWorkingFolder)'"
+        Write-verbose -Message "Working package: [$(Get-AatWorkingPackage)]"
 
         if(-not $AssetsFileName){
             $AssetsFileName = $Script:Options.AssetsFileName
@@ -530,7 +530,7 @@ function Add-VariableDefinition{
         
         Write-verbose -Message "Assets file: [$AssetsFileName]"
         
-        $AssetsFolderPath  = (Get-PackageFolderPath -Assets)
+        $AssetsFolderPath  = (Get-AatPackageFolderPath -Assets)
         $AssetsFilePath  = Join-Path -Path $AssetsFolderPath -ChildPath $AssetsFileName
 
         Write-verbose -Message "Assets file path: '$AssetsFilePath'"

@@ -8,31 +8,32 @@ schema: 2.0.0
 
 ## SYNOPSIS
 
-Deploys automation resources: runbooks, modules and assets (variables & credentials)
+Publish automation resources: runbooks, modules and assets (variables & credentials)
 
 ## SYNTAX
 
 ```
-Publish-AutomationPackage [-ResourceGroupName] <String> [-AutomationAccountName] <String> [[-Paths] <String[]>]
- [-DeployRunbooks] [-DeployModules] [-DeployVariables] [-DeployCredentials] [-NewCredentialsOnly]
- [[-JsonAssetDepth] <Int32>] [[-RunbookFilter] <String>] [[-AssetsFilter] <String>] [-WhatIf] [-Confirm]
+Publish-AutomationPackage [-ResourceGroupName] <String> [-AutomationAccountName] <String> 
+[[-Paths] <String[]>] [-DeployRunbooks] [-DeployModules] [-DeployVariables] [-DeployCredentials] [-NewCredentialsOnly]
+[[-JsonAssetDepth] <Int32>] [[-RunbookFilter] <String>] [[-AssetsFilter] <String>] [-WhatIf] [-Confirm]
 ```
 
 ## DESCRIPTION
-Deploys automation resources: runbooks, modules and assets (variables & credentials) to an automation
+
+Publish automation resources: runbooks, modules and assets (variables & credentials) to an automation
 account.
 
-## EXAMPLES
+## EXAMPLES 1: Publish all packages 
 
-### -------------------------- EXAMPLE 1 --------------------------
-```
-Publish-AutomationPackage
+```Powershell
+PS C:\> Publish-AatAutomationPackage -ResourceGroupName rg -AutomationAccountName aa 
 ```
 
 ## PARAMETERS
 
 ### -ResourceGroupName
-{{Fill ResourceGroupName Description}}
+
+Name of resource group to publish to.
 
 ```yaml
 Type: String
@@ -47,7 +48,8 @@ Accept wildcard characters: False
 ```
 
 ### -AutomationAccountName
-{{Fill AutomationAccountName Description}}
+
+Name of automation account to publish to.
 
 ```yaml
 Type: String
@@ -62,6 +64,7 @@ Accept wildcard characters: False
 ```
 
 ### -Paths
+
 The paths to deploy - if ommitted all folders at the root level (except deploy) will be searched for the specified
 automation resources.
 
@@ -78,8 +81,8 @@ Accept wildcard characters: False
 ```
 
 ### -DeployRunbooks
-Deploys runbooks.
-Default is false
+
+Publish runbooks.
 
 ```yaml
 Type: SwitchParameter
@@ -94,8 +97,9 @@ Accept wildcard characters: False
 ```
 
 ### -DeployModules
-Deploys modules.
-Default is false
+
+Publish modules.
+
 
 ```yaml
 Type: SwitchParameter
@@ -110,8 +114,8 @@ Accept wildcard characters: False
 ```
 
 ### -DeployVariables
-Deploys assets.
-Default is false
+
+Publish assets.
 
 ```yaml
 Type: SwitchParameter
@@ -126,8 +130,8 @@ Accept wildcard characters: False
 ```
 
 ### -DeployCredentials
-Deploys credentials.
-Default is false
+
+Publish credentials.
 
 ```yaml
 Type: SwitchParameter
@@ -142,8 +146,8 @@ Accept wildcard characters: False
 ```
 
 ### -NewCredentialsOnly
-Deploys only new credentials, if DeployCredentials is specified.
-Default is false
+
+Publish only new credentials.
 
 ```yaml
 Type: SwitchParameter
@@ -158,8 +162,8 @@ Accept wildcard characters: False
 ```
 
 ### -JsonAssetDepth
-Override this if the nested level is greather than 4 (count the curly braces).
-Default is 4
+
+The depth to use when converting objects to json.
 
 ```yaml
 Type: Int32
@@ -174,7 +178,8 @@ Accept wildcard characters: False
 ```
 
 ### -RunbookFilter
-{{Fill RunbookFilter Description}}
+
+Only runbooks matching the filter will be published.
 
 ```yaml
 Type: String
@@ -189,7 +194,8 @@ Accept wildcard characters: False
 ```
 
 ### -AssetsFilter
-Filter for Assets - Default *.json
+
+Only assets in files matching the filter will be published.
 
 ```yaml
 Type: String
@@ -204,6 +210,7 @@ Accept wildcard characters: False
 ```
 
 ### -WhatIf
+
 Shows what would happen if the cmdlet runs.
 The cmdlet is not run.
 
@@ -220,6 +227,7 @@ Accept wildcard characters: False
 ```
 
 ### -Confirm
+
 Prompts you for confirmation before running the cmdlet.
 
 ```yaml
@@ -236,9 +244,13 @@ Accept wildcard characters: False
 
 ## INPUTS
 
+### None
+
 ## OUTPUTS
 
-## NOTES
+### None
 
-## RELATED LINKS
+<!--## NOTES-->
+
+<!--## RELATED LINKS-->
 

@@ -112,7 +112,7 @@ Accept wildcard characters: False
 
 ### -DontCreateAssetsFile
 
-{{Fill DontCreateAssetsFile Description}}
+Supress the creation of the defaults assets file
 
 ```yaml
 Type: SwitchParameter

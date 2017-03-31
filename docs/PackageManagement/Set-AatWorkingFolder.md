@@ -4,31 +4,35 @@ online version:
 schema: 2.0.0
 ---
 
-# Set-WorkingFolder
+# Set-AatWorkingFolder
 
 ## SYNOPSIS
+
 Sets the working packages folder
 
 ## SYNTAX
 
-```
-Set-WorkingFolder [-Path] <String> [-WhatIf] [-Confirm]
+```Powershell
+Set-AatWorkingFolder [-Path] <String> [-WhatIf] [-Confirm]
 ```
 
 ## DESCRIPTION
+
 Sets the working packages folder, this folder will continue to be used regardless of pwd
 
 ## EXAMPLES
 
-### -------------------------- EXAMPLE 1 --------------------------
-```
-Set-AatWorkingFolder -Path c:\aat-package-examples
+### Example 1: Set the working folder
+
+```Powershell
+PS C:\> Set-AatWorkingFolder -Path c:\aat-package-examples
 ```
 
 ## PARAMETERS
 
 ### -Path
-{{Fill Path Description}}
+
+Specifies the path to set as the working folder.
 
 ```yaml
 Type: String
@@ -43,6 +47,7 @@ Accept wildcard characters: False
 ```
 
 ### -WhatIf
+
 Shows what would happen if the cmdlet runs.
 The cmdlet is not run.
 
@@ -59,6 +64,7 @@ Accept wildcard characters: False
 ```
 
 ### -Confirm
+
 Prompts you for confirmation before running the cmdlet.
 
 ```yaml
@@ -81,7 +87,10 @@ Accept wildcard characters: False
 
 ### None
 
-## NOTES
+<!--## NOTES-->
 
 ## RELATED LINKS
+
+[Get-AatWorkingFolder](.)
+
 

@@ -4,59 +4,67 @@ online version:
 schema: 2.0.0
 ---
 
-# Set-PackageOption
+# Set-AatPackageOption
 
 ## SYNOPSIS
-Sets the current package options
+
+Sets the current package options.
 
 ## SYNTAX
 
-```
-Set-PackageOption [[-AssetsFolderName] <String>] [[-ModulesFolderName] <String>]
+```Powershell
+Set-AatPackageOption [[-AssetsFolderName] <String>] [[-ModulesFolderName] <String>]
  [[-RunbooksFolderName] <String>] [[-AssetsFileName] <String>] [[-JsonAssetDepth] <Int32>]
  [[-Encoding] <String>] [-WhatIf] [-Confirm]
 ```
 
 ## DESCRIPTION
-Gets the current package options e.g.
-AssetsFolderName, AssetsFileName, JsonAssetDepth
+
+Gets the current package options e.g. AssetsFolderName, AssetsFileName, JsonAssetDepth.
 
 ## EXAMPLES
 
-### -------------------------- EXAMPLE 1 --------------------------
-```
-Set-AatPackageOption -AssetsFolderName example-assets
+### Example 1: Set the assets folder
+
+```Powershell
+PS C:\> Set-AatPackageOption -AssetsFolderName example-assets
 ```
 
-### -------------------------- EXAMPLE 2 --------------------------
-```
-Set-AatPackageOption -AssetsFileName example-assets.json
+### Example 2: Set the default file for assets
+
+```Powershell
+PS C:\> Set-AatPackageOption -AssetsFileName example-assets.json
 ```
 
-### -------------------------- EXAMPLE 3 --------------------------
-```
-Set-AatPackageOption -ModulesFolderName example-modules
+### Example 3: Set the folder for modules
+
+```Powershell
+PS C:\> Set-AatPackageOption -ModulesFolderName example-modules
 ```
 
-### -------------------------- EXAMPLE 4 --------------------------
-```
-Set-AatPackageOption -RunbooksFolderName example-runbooks
+### Example 4: Set the folder for runbooks
+
+```Powershell
+PS C:\> Set-AatPackageOption -RunbooksFolderName example-runbooks
 ```
 
-### -------------------------- EXAMPLE 5 --------------------------
-```
-Set-AatPackageOption -Encoding UTF8
+### Example 5: Set the encoding for package files
+
+```Powershell
+PS C:\> Set-AatPackageOption -Encoding Unicode
 ```
 
-### -------------------------- EXAMPLE 6 --------------------------
-```
-Set-AatPackageOption -AssetsFolderName example-assets -AssetsFileName example-assets.json -ModulesFolderName example-modules -RunbooksFolderName example-runbooks -Encoding UTF8
+### Example 6: Setting all options
+
+```Powershell
+PS C:\> Set-AatPackageOption -AssetsFolderName example-assets -AssetsFileName example-assets.json -ModulesFolderName example-modules -RunbooksFolderName example-runbooks -Encoding Unicode
 ```
 
 ## PARAMETERS
 
 ### -AssetsFolderName
-The name of the folder to use for assets
+
+The name of the folder to use for assets.
 
 ```yaml
 Type: String
@@ -71,7 +79,8 @@ Accept wildcard characters: False
 ```
 
 ### -ModulesFolderName
-The name of the folder to use for modules
+
+The name of the folder to use for modules.
 
 ```yaml
 Type: String
@@ -86,7 +95,8 @@ Accept wildcard characters: False
 ```
 
 ### -RunbooksFolderName
-The name of the folder to use for runbooks
+
+The name of the folder to use for runbooks.
 
 ```yaml
 Type: String
@@ -101,7 +111,8 @@ Accept wildcard characters: False
 ```
 
 ### -AssetsFileName
-The name of the file to use for assets
+
+The name of the default file to use for assets.
 
 ```yaml
 Type: String
@@ -116,8 +127,7 @@ Accept wildcard characters: False
 ```
 
 ### -JsonAssetDepth
-The maximum depth to resolve objects when converting them to json.
-Default 4
+The maximum depth to resolve objects when converting them to json. The package will use 4 unless it is exlicitly set.
 
 ```yaml
 Type: Int32
@@ -132,9 +142,8 @@ Accept wildcard characters: False
 ```
 
 ### -Encoding
-The encoding to use when writing files.
-Suported values are UTF8 & Unicode.
-Default UTF8
+
+The encoding to use when writing files. Suported values are UTF8 & Unicode. The package will use UTF8 unless unicode is set explicitly
 
 ```yaml
 Type: String
@@ -149,6 +158,7 @@ Accept wildcard characters: False
 ```
 
 ### -WhatIf
+
 Shows what would happen if the cmdlet runs.
 The cmdlet is not run.
 
@@ -165,6 +175,7 @@ Accept wildcard characters: False
 ```
 
 ### -Confirm
+
 Prompts you for confirmation before running the cmdlet.
 
 ```yaml
@@ -187,7 +198,9 @@ Accept wildcard characters: False
 
 ### System.Management.Automation.PSCustomObject
 
-## NOTES
+<!--## NOTES-->
 
 ## RELATED LINKS
+
+[Get-AatPackageOption](.)
 

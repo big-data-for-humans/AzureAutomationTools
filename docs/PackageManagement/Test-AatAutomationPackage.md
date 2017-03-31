@@ -4,33 +4,62 @@ online version:
 schema: 2.0.0
 ---
 
-# Test-AutomationPackage
+# Test-AatAutomationPackage
 
 ## SYNOPSIS
-{{Fill in the Synopsis}}
+
+Tests an automation package.
 
 ## SYNTAX
 
-```
-Test-AutomationPackage [[-PackageName] <String>] [-IgnoreWarnings]
+```Powershell
+Test-AatAutomationPackage [[-PackageName] <String>] [-IgnoreWarnings]
 ```
 
 ## DESCRIPTION
-{{Fill in the Description}}
+
+Tests an automation package. If no package name is specified then the current working packge will be tested.
 
 ## EXAMPLES
 
-### Example 1
-```
-PS C:\> {{ Add example code here }}
+### Example 1: Test the current working package
+
+```Powershell
+PS C:\> Test-AatAutomationPackage
+
+Message                                                                Severity
+-------                                                                --------
+Assets file 'assets.json' does not contain any of the supported prop   Error
+No module defintions found in  'C:\aat-package-examples\bad\modules'   Warning
+No runbooks found in  'C:\aat-package-examples\bad\runbooks'           Warning
 ```
 
-{{ Add example description here }}
+### Example 2: Test the current working package and ignore warnings
+
+```Powershell
+PS C:\> Test-AatAutomationPackage -IgnoreWarnings
+
+Message                                                                Severity
+-------                                                                --------
+Assets file 'assets.json' does not contain any of the supported prop   Error
+```
+
+### Example 3: Test a specified package
+
+```Powershell
+PS C:\> Test-AatAutomationPackage -PackageName example-3
+
+Message                                                                Severity
+-------                                                                --------
+Assets file 'assets.json' does not contain any of the supported prop   Error
+No runbooks found in  'C:\aat-package-examples\bad\runbooks'           Warning
+```
 
 ## PARAMETERS
 
 ### -IgnoreWarnings
-{{Fill IgnoreWarnings Description}}
+
+Specifies that warnings should note be reported.
 
 ```yaml
 Type: SwitchParameter
@@ -45,7 +74,8 @@ Accept wildcard characters: False
 ```
 
 ### -PackageName
-{{Fill PackageName Description}}
+
+Specifies the name of the package to test.
 
 ```yaml
 Type: String
@@ -63,10 +93,9 @@ Accept wildcard characters: False
 
 ### None
 
-
 ## OUTPUTS
 
-### System.Object
+### PackageTestResult
 
 ## NOTES
 

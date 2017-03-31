@@ -4,31 +4,35 @@ online version:
 schema: 2.0.0
 ---
 
-# Set-WorkingPackage
+# Set-AatWorkingPackage
 
 ## SYNOPSIS
+
 Sets the working package.
 
 ## SYNTAX
 
-```
-Set-WorkingPackage [-PackageName] <String> [-WhatIf] [-Confirm]
+```Powershell
+Set-AatWorkingPackage [-PackageName] <String> [-WhatIf] [-Confirm]
 ```
 
 ## DESCRIPTION
+
 Sets the working package - this must be a folder in the working package folder
 
 ## EXAMPLES
 
-### -------------------------- EXAMPLE 1 --------------------------
-```
-Set-AatWorkingPackage -PackageName sample
+### Example 1: Set the working package
+
+```Powershell
+PS C:\> Set-AatWorkingPackage -PackageName example
 ```
 
 ## PARAMETERS
 
 ### -PackageName
-{{Fill PackageName Description}}
+
+Specifies the name of the working package.
 
 ```yaml
 Type: String
@@ -43,6 +47,7 @@ Accept wildcard characters: False
 ```
 
 ### -WhatIf
+
 Shows what would happen if the cmdlet runs.
 The cmdlet is not run.
 
@@ -59,6 +64,7 @@ Accept wildcard characters: False
 ```
 
 ### -Confirm
+
 Prompts you for confirmation before running the cmdlet.
 
 ```yaml
@@ -81,7 +87,9 @@ Accept wildcard characters: False
 
 ### System.String
 
-## NOTES
+<!--## NOTES-->
 
 ## RELATED LINKS
+
+[Get-AatWorkingPackage](,)
 

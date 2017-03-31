@@ -45,7 +45,7 @@ function Get-WorkingFolder {
 }
 
 function Set-WorkingFolder {
-    [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'Medium')]
+    [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'Medium', PositionalBinding = $false)]
     param (
         [Parameter(Mandatory=$true)]
         [ValidateNotNullOrEmpty()]
@@ -58,7 +58,9 @@ function Set-WorkingFolder {
 }
 
 function Get-WorkingPackage {
-        
+    [CmdletBinding(PositionalBinding = $false)]
+    param()    
+    
     $ret = $Script:WorkingPackage
 
     if(-not $Script:WorkingPackage){        
@@ -69,7 +71,7 @@ function Get-WorkingPackage {
 }
 
 function Set-WorkingPackage {
-    [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'Medium')]
+    [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'Medium', PositionalBinding = $false)]
     param (
         [Parameter(Mandatory=$true)]
         [ValidateNotNullOrEmpty()]
@@ -86,7 +88,7 @@ function Set-WorkingPackage {
 }
 
 function Set-PackageOption {
-    [CmdletBinding(SupportsShouldProcess=$true, ConfirmImpact='Medium')]
+    [CmdletBinding(SupportsShouldProcess=$true, ConfirmImpact='Medium', PositionalBinding = $false)]
     param (
         [Parameter(Mandatory=$false)]
         [ValidateNotNullOrEmpty()]
@@ -140,10 +142,16 @@ function Set-PackageOption {
 }
 
 function Get-PackageOption {
+    [CmdletBinding(PositionalBinding = $false)]
+    param()    
+    
     $Script:Options
 }
 
 function Get-PackagePath {
+    [CmdletBinding(PositionalBinding = $false)]
+    param()    
+    
     $WorkingFolderPath = Get-WorkingFolder
     $PackageName = Get-WorkingPackage
     $PackagePath = (Join-Path -Path $WorkingFolderPath -ChildPath $PackageName)
@@ -151,7 +159,8 @@ function Get-PackagePath {
 }
 
 function Get-PackageFolderPath {
-    param (
+    [CmdletBinding(PositionalBinding = $false)]
+    param(
         [Parameter(Mandatory=$true,ParameterSetName='Assets')]
         [switch]$Assets,
         [Parameter(Mandatory=$true,ParameterSetName='Modules')]
@@ -181,7 +190,7 @@ function Get-PackageFolderPath {
 }
 
 function New-AutomationPackage {
-    [CmdletBinding(SupportsShouldProcess=$true, ConfirmImpact='Medium')]
+    [CmdletBinding(SupportsShouldProcess=$true, ConfirmImpact='Medium', PositionalBinding = $false)]
     param (        
         [Parameter(Mandatory=$true)]
         [ValidateNotNullOrEmpty()]
@@ -248,7 +257,8 @@ function New-AutomationPackage {
 }
 
 function Test-AutomationPackage {
-    param (        
+    [CmdletBinding(PositionalBinding = $false)]
+    param(    
         [Parameter(Mandatory=$false)]
         [ValidateNotNullOrEmpty()]
         [string]$PackageName,
@@ -396,7 +406,7 @@ function Test-AutomationPackage {
 }
 
 function New-AssetsFile{
-    [CmdletBinding(SupportsShouldProcess=$true, ConfirmImpact='Medium')]
+    [CmdletBinding(SupportsShouldProcess=$true, ConfirmImpact='Medium', PositionalBinding=$false)]
     param(
         [Parameter(Mandatory=$false)]
         [ValidateNotNullOrEmpty()]
@@ -450,7 +460,7 @@ function New-AssetsFile{
 }
 
 function New-VariableDefinition{
-    [CmdletBinding(SupportsShouldProcess=$true, ConfirmImpact='Low')]    
+    [CmdletBinding(SupportsShouldProcess=$true, ConfirmImpact='Low', PositionalBinding=$false)]    
     param (
         [Parameter(Mandatory=$false)]
         [ValidateNotNullOrEmpty()]
@@ -481,7 +491,7 @@ function New-VariableDefinition{
 }
 
 function Add-VariableDefinition{
-    [CmdletBinding(SupportsShouldProcess=$true, ConfirmImpact='Low')]    
+    [CmdletBinding(SupportsShouldProcess=$true, ConfirmImpact='Low', PositionalBinding = $false)]    
     param (
         [Parameter(Mandatory=$true)]
         [ValidateNotNullOrEmpty()]
@@ -538,6 +548,7 @@ function Add-VariableDefinition{
 }
 
 function DeployRunbooks {
+    [CmdletBinding(PositionalBinding = $false)]
     param(
         [Parameter(Mandatory=$true)]
         [ValidateNotNullOrEmpty()]
@@ -579,6 +590,7 @@ function DeployRunbooks {
 }
 
 function DeployAssets {
+    [CmdletBinding(PositionalBinding = $false)]
     param(
         [Parameter(Mandatory=$true)]
         [ValidateNotNullOrEmpty()]
@@ -683,6 +695,7 @@ function DeployAssets {
 }
 
 function DeployModules {
+    [CmdletBinding(PositionalBinding = $false)]
     param(
         [Parameter(Mandatory=$true)]
         [ValidateNotNullOrEmpty()]
@@ -728,7 +741,7 @@ function DeployModules {
 }
 
 function Publish-AutomationPackage {
-    [CmdletBinding(SupportsShouldProcess=$true, ConfirmImpact='High')]    
+    [CmdletBinding(SupportsShouldProcess=$true, ConfirmImpact='High', PositionalBinding = $false)]    
     param (
         [Parameter(Mandatory=$true)]
         [ValidateNotNullOrEmpty()]

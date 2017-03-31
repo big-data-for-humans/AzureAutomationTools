@@ -34,7 +34,7 @@ class PackageTestResult {
     }
 }
 
-function Get-WorkingFolder {
+function Get-AatWorkingFolder {
     $ret = $Script:WorkingFolder 
 
     if(-not $Script:WorkingFolder){
@@ -44,7 +44,7 @@ function Get-WorkingFolder {
     $ret
 }
 
-function Set-WorkingFolder {
+function Set-AatWorkingFolder {
     [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'Medium', PositionalBinding = $false)]
     param (
         [Parameter(Mandatory=$true)]
@@ -57,7 +57,7 @@ function Set-WorkingFolder {
     }
 }
 
-function Get-WorkingPackage {
+function Get-AatWorkingPackage {
     [CmdletBinding(PositionalBinding = $false)]
     param()    
     
@@ -70,7 +70,7 @@ function Get-WorkingPackage {
     $ret
 }
 
-function Set-WorkingPackage {
+function Set-AatWorkingPackage {
     [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'Medium', PositionalBinding = $false)]
     param (
         [Parameter(Mandatory=$true)]
@@ -87,7 +87,7 @@ function Set-WorkingPackage {
     }
 }
 
-function Set-PackageOption {
+function Set-AatPackageOption {
     [CmdletBinding(SupportsShouldProcess=$true, ConfirmImpact='Medium', PositionalBinding = $false)]
     param (
         [Parameter(Mandatory=$false)]
@@ -141,14 +141,14 @@ function Set-PackageOption {
     }
 }
 
-function Get-PackageOption {
+function Get-AatPackageOption {
     [CmdletBinding(PositionalBinding = $false)]
     param()    
     
     $Script:Options
 }
 
-function Get-PackagePath {
+function Get-AatPackagePath {
     [CmdletBinding(PositionalBinding = $false)]
     param()    
     
@@ -158,7 +158,7 @@ function Get-PackagePath {
     $PackagePath
 }
 
-function Get-PackageFolderPath {
+function Get-AatPackageFolderPath {
     [CmdletBinding(PositionalBinding = $false)]
     param(
         [Parameter(Mandatory=$true,ParameterSetName='Assets')]
@@ -189,7 +189,7 @@ function Get-PackageFolderPath {
     $ret
 }
 
-function New-AutomationPackage {
+function New-AatAutomationPackage {
     [CmdletBinding(SupportsShouldProcess=$true, ConfirmImpact='Medium', PositionalBinding = $false)]
     param (        
         [Parameter(Mandatory=$true)]
@@ -405,7 +405,7 @@ function Test-AutomationPackage {
     $TestResults
 }
 
-function New-AssetsFile{
+function New-AatAssetsFile{
     [CmdletBinding(SupportsShouldProcess=$true, ConfirmImpact='Medium', PositionalBinding=$false)]
     param(
         [Parameter(Mandatory=$false)]
@@ -459,7 +459,7 @@ function New-AssetsFile{
     }
 }
 
-function New-VariableDefinition{
+function New-AatVariableDefinition{
     [CmdletBinding(SupportsShouldProcess=$true, ConfirmImpact='Low', PositionalBinding=$false)]    
     param (
         [Parameter(Mandatory=$false)]
@@ -740,7 +740,7 @@ function DeployModules {
     }
 }
 
-function Publish-AutomationPackage {
+function Publish-AatAutomationPackage {
     [CmdletBinding(SupportsShouldProcess=$true, ConfirmImpact='High', PositionalBinding = $false)]    
     param (
         [Parameter(Mandatory=$true)]

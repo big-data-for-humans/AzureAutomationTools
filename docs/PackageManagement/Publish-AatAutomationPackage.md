@@ -7,6 +7,7 @@ schema: 2.0.0
 # Publish-AutomationPackage
 
 ## SYNOPSIS
+
 Deploys automation resources: runbooks, modules and assets (variables & credentials)
 
 ## SYNTAX

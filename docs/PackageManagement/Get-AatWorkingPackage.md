@@ -4,32 +4,33 @@ online version:
 schema: 2.0.0
 ---
 
-# Get-WorkingPackage
+# Get-AatWorkingPackage
 
 ## SYNOPSIS
+
 Gets the working package.
 
 ## SYNTAX
 
-```
-Get-WorkingPackage
+```Powershell
+Get-AatWorkingPackage
 ```
 
 ## DESCRIPTION
+
 Gets the working package, or if none has been set returns the first folder in
-the working package folder (i.e.
-as returned by Get-AatWorkingFolder)
+the working package folder (i.e. as returned by Get-AatWorkingFolder)
 
 ## EXAMPLES
 
 ### -------------------------- EXAMPLE 1 --------------------------
-```
-Get-AatWorkingPackage
+
+```Powershell
+PS C:\> Get-AatWorkingPackage
+example-1
 ```
 
-sample
-
-## PARAMETERS
+<!--## PARAMETERS-->
 
 ## INPUTS
 
@@ -39,7 +40,8 @@ sample
 
 ### System.String
 
-## NOTES
+<!--## NOTES-->
 
 ## RELATED LINKS
 
+[Get-AatWorkingFolder](.)

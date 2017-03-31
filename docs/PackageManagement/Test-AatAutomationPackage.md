@@ -18,7 +18,7 @@ Test-AatAutomationPackage [[-PackageName] <String>] [-IgnoreWarnings]
 
 ## DESCRIPTION
 
-Tests an automation package. If no package name is specified then the current working packge will be tested.
+Tests an automation package. If no package name is specified then the current working package will be tested.
 
 ## EXAMPLES
 
@@ -97,7 +97,7 @@ Accept wildcard characters: False
 
 ### PackageTestResult
 
-## NOTES
+<!--## NOTES-->
 
-## RELATED LINKS
+<!--## RELATED LINKS-->
 

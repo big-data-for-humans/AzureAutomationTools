@@ -91,5 +91,5 @@ Accept wildcard characters: False
 
 ## RELATED LINKS
 
-[Get-AatWorkingPackage](,)
+[Get-AatWorkingPackage](.)
 

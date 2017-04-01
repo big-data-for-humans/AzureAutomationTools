@@ -34,8 +34,6 @@ AssetsFolderName               assets
 AssetsFileName                 assets.json
 ```
 
-<!--## PARAMETERS-->
-
 ## PARAMETERS
 
 ### CommonParameters

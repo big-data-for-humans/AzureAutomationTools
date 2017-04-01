@@ -27,8 +27,6 @@ PS C:\> Get-AatWorkingFolder
 C:\aat-package-examples\
 ```
 
-<!--## PARAMETERS-->
-
 ## PARAMETERS
 
 ### CommonParameters
@@ -41,7 +39,6 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## OUTPUTS
 
 ### System.String
-<!--## NOTES-->
 
 ## NOTES
 

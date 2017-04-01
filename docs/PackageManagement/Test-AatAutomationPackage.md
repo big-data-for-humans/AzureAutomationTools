@@ -92,9 +92,6 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## OUTPUTS
 
 ### PackageTestResult
-<!--## NOTES-->
-
-<!--## RELATED LINKS-->
 
 ## NOTES
 

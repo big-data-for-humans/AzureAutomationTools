@@ -161,11 +161,4 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ### System.Management.Automation.PSCustomObject
 
 ### System.String
-<!--## NOTES-->
-
-<!--## RELATED LINKS-->
-
-## NOTES
-
-## RELATED LINKS
 

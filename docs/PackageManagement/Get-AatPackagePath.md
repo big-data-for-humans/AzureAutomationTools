@@ -26,8 +26,6 @@ PS C:\> Get-AatPackagePath
 C:\aat-package-examples\example-1
 ```
 
-<!--## PARAMETERS-->
-
 ## PARAMETERS
 
 ### CommonParameters

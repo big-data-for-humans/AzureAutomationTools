@@ -4,7 +4,7 @@ online version:
 schema: 2.0.0
 ---
 
-# Get-AatWorkingPackage
+# New-AatAutomationPackage
 
 ## SYNOPSIS
 Gets the working package.
@@ -12,7 +12,7 @@ Gets the working package.
 ## SYNTAX
 
 ```
-Get-AatWorkingPackage [<CommonParameters>]
+New-AatAutomationPackage [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -23,7 +23,7 @@ the working package folder (i.e. as returned by Get-AatWorkingFolder)
 
 ### Example 1: Get the working package
 ```
-PS C:\> Get-AatWorkingPackage
+PS C:\> New-AatAutomationPackage
 example-1
 ```
 

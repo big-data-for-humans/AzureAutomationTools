@@ -4,53 +4,49 @@ online version:
 schema: 2.0.0
 ---
 
-# Publish-AutomationPackage
+# Publish-AatAutomationPackage
 
 ## SYNOPSIS
-
 Publish automation resources: runbooks, modules and assets (variables & credentials)
 
 ## SYNTAX
 
 ```
-Publish-AutomationPackage [-ResourceGroupName] <String> [-AutomationAccountName] <String> 
-[[-Paths] <String[]>] [-DeployRunbooks] [-DeployModules] [-DeployVariables] [-DeployCredentials] [-NewCredentialsOnly]
-[[-JsonAssetDepth] <Int32>] [[-RunbookFilter] <String>] [[-AssetsFilter] <String>] [-WhatIf] [-Confirm]
+Publish-AatAutomationPackage -ResourceGroupName <String> -AutomationAccountName <String> [-Paths <String[]>]
+ [-DeployRunbooks] [-DeployModules] [-DeployVariables] [-DeployCredentials] [-NewCredentialsOnly]
+ [-JsonAssetDepth <Int32>] [-RunbookFilter <String>] [-AssetsFilter <String>] [-WhatIf] [-Confirm]
+ [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-
 Publish automation resources: runbooks, modules and assets (variables & credentials) to an automation
 account.
 
 ## EXAMPLES
 
 ### Example 1: Publish all packages
-
-```Powershell
-PS C:\> Publish-AatAutomationPackage -ResourceGroupName rg -AutomationAccountName aa 
+```
+PS C:\> Publish-AatAutomationPackage -ResourceGroupName rg -AutomationAccountName aa
 ```
 
 ## PARAMETERS
 
-### -ResourceGroupName
-
-Name of resource group to publish to.
+### -AssetsFilter
+Only assets in files matching the filter will be published.
 
 ```yaml
 Type: String
 Parameter Sets: (All)
 Aliases: 
 
-Required: True
-Position: 1
-Default value: None
+Required: False
+Position: Named
+Default value: *.json
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
 ### -AutomationAccountName
-
 Name of automation account to publish to.
 
 ```yaml
@@ -59,32 +55,29 @@ Parameter Sets: (All)
 Aliases: 
 
 Required: True
-Position: 2
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -Paths
-
-The paths to deploy - if ommitted all folders at the root level (except deploy) will be searched for the specified
-automation resources.
+### -Confirm
+Prompts you for confirmation before running the cmdlet.
 
 ```yaml
-Type: String[]
+Type: SwitchParameter
 Parameter Sets: (All)
-Aliases: 
+Aliases: cf
 
 Required: False
-Position: 3
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -DeployRunbooks
-
-Publish runbooks.
+### -DeployCredentials
+Publish credentials.
 
 ```yaml
 Type: SwitchParameter
@@ -99,7 +92,6 @@ Accept wildcard characters: False
 ```
 
 ### -DeployModules
-
 Publish modules.
 
 
@@ -115,8 +107,22 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -DeployVariables
+### -DeployRunbooks
+Publish runbooks.
 
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases: 
+
+Required: False
+Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -DeployVariables
 Publish assets.
 
 ```yaml
@@ -131,24 +137,22 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -DeployCredentials
-
-Publish credentials.
+### -JsonAssetDepth
+The depth to use when converting objects to json.
 
 ```yaml
-Type: SwitchParameter
+Type: Int32
 Parameter Sets: (All)
 Aliases: 
 
 Required: False
 Position: Named
-Default value: False
+Default value: 4
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
 ### -NewCredentialsOnly
-
 Publish only new credentials.
 
 ```yaml
@@ -163,24 +167,38 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -JsonAssetDepth
-
-The depth to use when converting objects to json.
+### -Paths
+The paths to deploy - if ommitted all folders at the root level (except deploy) will be searched for the specified
+automation resources.
 
 ```yaml
-Type: Int32
+Type: String[]
 Parameter Sets: (All)
 Aliases: 
 
 Required: False
-Position: 4
-Default value: 4
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ResourceGroupName
+Name of resource group to publish to.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases: 
+
+Required: True
+Position: Named
+Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
 ### -RunbookFilter
-
 Only runbooks matching the filter will be published.
 
 ```yaml
@@ -189,30 +207,13 @@ Parameter Sets: (All)
 Aliases: 
 
 Required: False
-Position: 5
+Position: Named
 Default value: *.ps1
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -AssetsFilter
-
-Only assets in files matching the filter will be published.
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases: 
-
-Required: False
-Position: 6
-Default value: *.json
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -WhatIf
-
 Shows what would happen if the cmdlet runs.
 The cmdlet is not run.
 
@@ -228,21 +229,8 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -Confirm
-
-Prompts you for confirmation before running the cmdlet.
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases: cf
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
+### CommonParameters
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see about_CommonParameters (http://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 
@@ -255,3 +243,4 @@ Accept wildcard characters: False
 ## NOTES
 
 ## RELATED LINKS
+

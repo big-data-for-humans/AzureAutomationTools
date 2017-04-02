@@ -1,28 +1,14 @@
 $SourcePath = "$Env:USERPROFILE\source\repos\azure-automation-tools\docs\PackageManagement"
 $DestinationPath = "$Env:USERPROFILE\source\repos\azure-automation-tools.wiki"
 
-$Helpfiles = [ordered]@{
-    'Add-AatPackageVariable'    = 'Add-a-variable-definition'
-    'Get-AatPackageFolderPath'     = 'Get-a-package-folder-path' 
-    'Get-AatPackageOption'         = 'Get-package-options'
-    'Get-AatPackagePath'           = 'Get-package-path'
-    'Get-AatWorkingFolder'         = 'Get-working-folder'
-    'Get-AatWorkingPackage'        = 'Get-working-package'
-    'New-AatAssetsFile'            = 'Create-a-new-assets-file'
-    'New-AatAutomationPackage'     = 'Create-a-new-automation-pacakge'
-    'New-AatPackageVariable'       = 'Create-a-new-variable'
-    'Publish-AatAutomationPackage' = 'Publish-an-automation-package'
-    'Set-AatPackageOption'         =  'Set-package-options'
-    'Set-AatWorkingFolder'         =  'Set-working-folder'
-    'Set-AatWorkingPackage'        =  'Set-working-package'
-    'Test-AatAutomationPackage'    =  'Test-an-automation-package'
-}
+$PublishData =  Import-PowerShellDataFile -Path "$PSScriptRoot\publish.psd1"
+
+$Helpfiles = $PublishData.FileMap
 
 
 # copy & format latest files from the 
 $Helpfiles.GetEnumerator() | % {
-   #cp -Path "$SourcePath\$($_.Key).md" -Destination " "$DestinationPath\$($_.Value).md"
-
+   
    $Params = @{
         SourceFilePath = "$SourcePath\$($_.Key).md"
         DestinationFilePath = "$DestinationPath\$($_.Value).md"
@@ -82,8 +68,29 @@ $Helpfiles.GetEnumerator() | % {
     }  | Set-Content -Path "$DestinationPath\$($_.Value).md" -Encoding UTF8 
 }
 
-#
-$Helpfiles.GetEnumerator() | % {
-   "- [$($_.Key)]($($_.Value))"
+$Toc = '<!--toc-start-->', ''
 
-} 
+$Toc += ($Helpfiles.GetEnumerator() | % {
+   "- [$($_.Key)]($($_.Value))"
+}) | sort 
+
+$Toc += '', '<!--toc-end-->'
+
+$FoundToc = $false
+
+(cat "$Env:USERPROFILE\source\repos\azure-automation-tools.wiki\Package-Management.md") | % {
+
+    if(-not $FoundToc){
+        $FoundToc  = $_ -eq '<!--toc-start-->'
+    
+        if($FoundToc){
+            $Toc
+        } else {
+            $_
+        }
+
+    } else  {
+        $FoundToc = $_ -ne '<!--toc-end-->'
+    }
+} | Set-Content -Encoding UTF8 -Path "$Env:USERPROFILE\source\repos\azure-automation-tools.wiki\Package-Management.md"
+

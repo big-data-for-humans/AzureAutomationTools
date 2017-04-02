@@ -19,10 +19,20 @@ $Helpfiles = [ordered]@{
 }
 
 
-# copy latest files from the 
+# copy & format latest files from the 
 $Helpfiles.GetEnumerator() | % {
-   cp -Path "$SourcePath\$($_.Key).md" -Destination "$DestinationPath\$($_.Value).md"
+   #cp -Path "$SourcePath\$($_.Key).md" -Destination " "$DestinationPath\$($_.Value).md"
+
+   $Params = @{
+        SourceFilePath = "$SourcePath\$($_.Key).md"
+        DestinationFilePath = "$DestinationPath\$($_.Value).md"
+        FindTopLevelHeader = $true
+        SkipEmptySecondLevelSections = $true    
+    }
+
+    & "$PSScriptRoot\CopyAndFormatMarkdownHelpFile.ps1" @params
 }
+
 
 # skip the headers
 $Helpfiles.GetEnumerator() | % {

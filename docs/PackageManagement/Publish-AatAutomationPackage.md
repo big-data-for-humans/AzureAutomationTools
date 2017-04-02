@@ -23,7 +23,9 @@ Publish-AutomationPackage [-ResourceGroupName] <String> [-AutomationAccountName]
 Publish automation resources: runbooks, modules and assets (variables & credentials) to an automation
 account.
 
-## EXAMPLES 1: Publish all packages 
+## EXAMPLES
+
+### Example 1: Publish all packages
 
 ```Powershell
 PS C:\> Publish-AatAutomationPackage -ResourceGroupName rg -AutomationAccountName aa 

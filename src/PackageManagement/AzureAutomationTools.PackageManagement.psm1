@@ -571,7 +571,15 @@ function DeployRunbooks {
         throw "Path not found: '$RunbooksRoot'"
     }
 
-    Get-ChildItem -Path $RunbooksRoot -File -Filter $Filter | ForEach-Object {
+    $CommonParameters = @{ResourceGroupName = $ResourceGroupName; AutomationAccountName = $AutomationAccountName}
+
+    $Runbooks = Get-ChildItem -Path $RunbooksRoot -File -Filter $Filter
+
+    if (-not $Runbooks) {
+        Write-Warning -Message "No runbooks found in $RunbooksRoot matching $Filter"    
+    }
+
+    $Runbooks | ForEach-Object {
         $CommonParameters
         
         $ExistingRunbooks = @()
@@ -614,17 +622,19 @@ function DeployAssets {
         throw "Path not found: '$AssetsRoot'"
     }
     
+    $CommonParameters = @{ResourceGroupName = $ResourceGroupName; AutomationAccountName = $AutomationAccountName}
+
     Get-ChildItem -Path $AssetsRoot -File -Filter $Filter | ForEach-Object {
         Write-Output "Assets File: '$($_.FullName)'"
-        
-        $Assets = Get-Content -Path $_.FullName -Raw | ConvertFrom-Json
+        #Write-Output (Get-Content $_.FullName -Raw) 
+        $Assets = Get-Content $_.FullName -Raw | ConvertFrom-Json
                 
         $ExistingVariables = @()
         $ExistingVariables += (Get-AzureRmAutomationVariable @CommonParameters| Select-Object Name) | ForEach-Object {$_.Name}
     
         if ($DeployVariables) {
-            $Assets.Variable | ForEach-Object {
-                if ($_.Encrypted) {
+            $Assets.Variables | ForEach-Object {
+                if ($_.IsEncrypted) {
                     $Value = 'totally not the value!'
                 }
                 elseif (('Int32', 'Boolean', 'String', 'Double').Contains($_.Value.GetType().Name)) {
@@ -634,7 +644,7 @@ function DeployAssets {
                     $Value = $_.Value | ConvertTo-Json -Depth $JsonAssetDepth
                 }
             
-                $Params = @{Name = $_.Name; Encrypted = $_.Encrypted; Value = $Value}
+                $Params = @{Name = $_.Name; Encrypted = $_.IsEncrypted; Value = $Value}
                 $Params += $CommonParameters
 
                 if ($ExistingVariables.Contains($_.Name)) {
@@ -653,21 +663,21 @@ function DeployAssets {
                     Write-Output "Creating new variable [$($_.Name)] - done."
                 }
                 
-                if ($_.Encrypted) {
+                if ($_.IsEncrypted) {
                     Write-Warning "Password must be manually set for variable [$($_.Name)]"
                 }
             }
         }
         
         if ($DeployCredentials) {
-            if (-not $Assets.PSCredential) {
+            if ($Assets.psobject.properties.Name -notcontains 'Credentials') {
                 Write-Warning "No credentials found in [$($_.FullName)]."
             }
             else { 
                 $ExistingCredentials = @()
                 $ExistingCredentials += (Get-AzureRmAutomationCredential @CommonParameters| Select-Object Name) | ForEach-Object {$_.Name}
 
-                $Assets.PSCredential | ForEach-Object {
+                $Assets.Credentials | ForEach-Object {
                     # See https://github.com/PowerShell/PSScriptAnalyzer/issues/574 
                     #$Password = [guid]::NewGuid() | ConvertTo-SecureString -asPlainText -Force
                     $Password = [SecureString]::new()
@@ -714,19 +724,27 @@ function DeployModules {
 
     $ModulesRoot = Join-Path -Path $Path -ChildPath 'modules'
 
-    if (!Test-Path $ModulesRoot) {
+    if (-not (Test-Path $ModulesRoot)) {
         throw "Path not found: '$ModulesRoot'"
     }
 
     Write-Output "Modules Root: '$ModulesRoot'"
     
-    Get-ChildItem -Path $ModulesRoot -File -Filter '*.json' | ForEach-Object {
-        Write-Output "Modules file: '$($_.FullName)'"
-        $Modules = Get-Content -Path $_.FullName -Raw | ConvertFrom-Json
-        $ExistingModules = (Get-AzureRmAutomationModule @CommonParameters| Select-Object 'Name', 'Version')
+    $ModulesFiles = Get-ChildItem -Path $ModulesRoot -File -Filter '*.json' 
+
+    if (-not $ModulesFiles) {
+        Write-Warning -Message "No modules files found in $ModulesRoot matching '*.json'"
+    }
+
+    $CommonParameters = @{ResourceGroupName = $ResourceGroupName; AutomationAccountName = $AutomationAccountName};
+
+    $ModulesFiles | ForEach-Object {
+        Write-Output "Modules file: '$($_.FullName)'";
+        $Modules = Get-Content $_.FullName -Raw | ConvertFrom-Json;
+        $ExistingModules = (Get-AzureRmAutomationModule @CommonParameters| Select-Object 'Name', 'Version');
             
         foreach ($Module in $Modules) {
-            $ContentLink = $PackageRootUri + $Module.Package
+            $ContentLink = $Module.Package
             $Params = @{Name = $Module.Name; }
             $Params += $CommonParameters
        
@@ -753,7 +771,7 @@ function DeployModules {
 }
 
 function Publish-AatAutomationPackage {
-    [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'High', PositionalBinding = $false)]    
+    [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'High', PositionalBinding = $false, DefaultParameterSetName = 'NamedPackages')]    
     param (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
@@ -761,8 +779,6 @@ function Publish-AatAutomationPackage {
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [string]$AutomationAccountName,
-        [Parameter(Mandatory = $false)]
-        [string[]]$Paths,
         [Parameter(Mandatory = $false)]
         [Switch]$DeployRunbooks,    
         [Parameter(Mandatory = $false)]
@@ -776,21 +792,49 @@ function Publish-AatAutomationPackage {
         [Parameter(Mandatory = $false)]
         [int]$JsonAssetDepth = 4,
         [Parameter(Mandatory = $false)]
+        [ValidatePattern('^.+\.ps1$')]
         [string]$RunbookFilter = '*.ps1',
         [Parameter(Mandatory = $false)]
-        [string]$AssetsFilter = '*.json'    
+        [ValidatePattern('^.+\.json$')]
+        [string]$AssetsFileFilter = '*.json',
+        [Parameter(Mandatory = $false, ParameterSetName = 'NamedPackages')]
+        [ValidateNotNullOrEmpty()]
+        [string[]]$PackageName,
+        [Parameter(ParameterSetName = 'AllPackages')]
+        [switch]$AllPackages
     )
     
-    if ($PSCmdlet.ShouldProcess("$ResourceGroupName/$AutomationAccountName", 'Publish automation package')) {            
-        if (-not $Paths) {
-            Write-Verbose -Message "Paths not specifed. Searching..."
-            $Paths = (Get-ChildItem -Path $Root -Directory -Exclude (Split-Path $PSScriptRoot -Leaf)).FullName
-        }
-        else {
-            $Paths = $Paths | ForEach-Object {Join-Path -Path $Root -ChildPath $_ -Resolve}  
-        }
+    Write-Verbose -Message "Parameter set: $($PSCmdlet.ParameterSetName)"    
 
-        Write-Verbose -Message "Paths: $([string]::Join(';',$Paths))" -Verbose
+    if ($PSCmdlet.ParameterSetName -eq 'NamedPackages') {
+        if (-not $PackageName) {
+            $PackageName = Get-AatWorkingPackage
+        }
+    }
+    elseif ($PSCmdlet.ParameterSetName -eq 'AllPackages') {
+        $PackageName = (Get-ChildItem -Path (Get-AatWorkingFolder) -Directory).Name
+    } 
+    else {
+        throw "Unexpected parameter set: $($PSCmdlet.ParameterSetName)"
+    }
+
+    Write-Verbose -Message "Parameters:"
+
+    $PSBoundParameters.GetEnumerator() | ForEach-Object {
+        Write-Verbose -Message "$($_.Key): $($_.Value)"
+    }
+    
+    $DeployAssets = $DeployVariables -or $DeployCredentials 
+
+    if (-not ($DeployRunbooks.IsPresent -or $DeployModules.IsPresent -or $DeployAssets)) {
+        Write-Warning -Message "Nothing to deploy, please specify -DeployRunbooks, -DeployModules, -DeployVariables, or -DeployCredentials"
+    }
+    elseif ($PSCmdlet.ShouldProcess("$ResourceGroupName/$AutomationAccountName", 'Publish automation packages')) {                        
+        $Paths = $PackageName | ForEach-Object {
+            $Path = Join-Path -Path (Get-AatWorkingFolder) -ChildPath $_ -Resolve
+            Write-Verbose -Message "Will publish package: $_  ($Path)"
+            $Path
+        }  
 
         $Paths | ForEach-Object {
             Write-Verbose -Message "Searching '$_'"
@@ -809,29 +853,25 @@ function Publish-AatAutomationPackage {
 
             if ($DeployAssets) {
                 Write-Output "INFO: Deploying assets from '$_'."
-                DeployAssets -Path $_ -Filter $AssetsFilter
+                DeployAssets -Path $_ -Filter $AssetsFileFilter
                 Write-Output "INFO: Deploying assets from '$_' - done."
             }
 
-            if (($DeployRunbooks -or $DeployModules) -or $DeployAssets) {
-                $VariableName = '~LastDeploymentTime'
-                $Value = (Get-Date).ToUniversalTime().ToString('s') + 'Z'
-                $Params = @{Name = $VariableName}
-                $Params += $CommonParameters
-                $Variable = (Get-AzureRmAutomationVariable @Params -ErrorAction 'Ignore')
-                $Params += @{Encrypted = $false; Value = $Value}
+            $CommonParameters = @{ResourceGroupName = $ResourceGroupName; AutomationAccountName = $AutomationAccountName}
+            $VariableName = '~LastDeploymentTime'
+            $Value = (Get-Date).ToUniversalTime().ToString('s') + 'Z'
+            $Params = @{Name = $VariableName}
+            $Params += $CommonParameters
+            $Variable = (Get-AzureRmAutomationVariable @Params -ErrorAction 'Ignore')
+            $Params += @{Encrypted = $false; Value = $Value}
 
-                if (!$Variable) {
-                    New-AzureRmAutomationVariable @Params
-                }
-                else {
-                    Set-AzureRmAutomationVariable @Params
-                }
+            if (!$Variable) {
+                New-AzureRmAutomationVariable @Params
             }
             else {
-                Write-Warning "No changes made!"
-            }
-
+                Set-AzureRmAutomationVariable @Params
+            }            
+            
             Write-Verbose -Message "Searching '$_' - done."
         }
     }

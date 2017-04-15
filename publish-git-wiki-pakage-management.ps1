@@ -1,15 +1,13 @@
 $SourcePath = "$Env:USERPROFILE\source\repos\azure-automation-tools\docs\PackageManagement"
 $DestinationPath = "$Env:USERPROFILE\source\repos\azure-automation-tools.wiki"
 
-$PublishData =  Import-PowerShellDataFile -Path "$PSScriptRoot\publish.psd1"
-
+$PublishData = Import-PowerShellDataFile -Path "$PSScriptRoot\publish.psd1"
 $Helpfiles = $PublishData.FileMap
-
 
 # copy & format latest files from the 
 $Helpfiles.GetEnumerator() | % {
    
-   $Params = @{
+    $Params = @{
         SourceFilePath = "$SourcePath\$($_.Key).md"
         DestinationFilePath = "$DestinationPath\$($_.Value).md"
         FindTopLevelHeader = $true
@@ -23,12 +21,12 @@ $Helpfiles.GetEnumerator() | % {
 # skip the headers
 $Helpfiles.GetEnumerator() | % {
      
-   Write-verbose "$DestinationPath\$($_.Value)"
+    Write-verbose "$DestinationPath\$($_.Value)"
 
-   $Input = (gc -path "$DestinationPath\$($_.Value).md") 
+    $Input = (gc -path "$DestinationPath\$($_.Value).md") 
    
 
-   Write-verbose "lines $($Input.Length)"
+    Write-verbose "lines $($Input.Length)"
 
     $i = 0
     
@@ -38,7 +36,7 @@ $Helpfiles.GetEnumerator() | % {
     }
     until ($Line -match '^# .+$' -or $i -eq $Input.Length)
     
-    if($i -eq $Input.Length){
+    if ($i -eq $Input.Length) {
         Write-warning "header 1 not found in $($_.Value)"
         continue
         
@@ -47,21 +45,21 @@ $Helpfiles.GetEnumerator() | % {
 
     Write-verbose "Header at row $i"
 
-
-    $Input | select -skip $i | % {
+    $Input | Select-Object -skip $i | % {
         $Match = [regex]::Match($_, '\[(?<command>.+)\]\(\.\)')
 
-        if($Match.Success){
+        if ($Match.Success) {
             $Command = $Match.Groups['command'].Value
             $Helpfile = $Helpfiles[$Command]
 
-            if(-not $Helpfile){
+            if (-not $Helpfile) {
                 Write-Warning "help file $command not found in lookup"
                 $HelpFile = '.'
             }
 
             "[$($Command)]($($Helpfile))"
-        } else{
+        }
+        else {
             $_         
         }
 
@@ -71,8 +69,8 @@ $Helpfiles.GetEnumerator() | % {
 $Toc = '<!--toc-start-->', ''
 
 $Toc += ($Helpfiles.GetEnumerator() | % {
-   "- [$($_.Key)]($($_.Value))"
-}) | sort 
+        "- [$($_.Key)]($($_.Value))"
+    }) | sort 
 
 $Toc += '', '<!--toc-end-->'
 
@@ -80,16 +78,18 @@ $FoundToc = $false
 
 (cat "$Env:USERPROFILE\source\repos\azure-automation-tools.wiki\Package-Management.md") | % {
 
-    if(-not $FoundToc){
-        $FoundToc  = $_ -eq '<!--toc-start-->'
+    if (-not $FoundToc) {
+        $FoundToc = $_ -eq '<!--toc-start-->'
     
-        if($FoundToc){
+        if ($FoundToc) {
             $Toc
-        } else {
+        }
+        else {
             $_
         }
 
-    } else  {
+    }
+    else {
         $FoundToc = $_ -ne '<!--toc-end-->'
     }
 } | Set-Content -Encoding UTF8 -Path "$Env:USERPROFILE\source\repos\azure-automation-tools.wiki\Package-Management.md"

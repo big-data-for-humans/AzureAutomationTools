@@ -22,7 +22,7 @@ the working package folder (i.e. as returned by Get-AatWorkingFolder)
 ## EXAMPLES
 
 ### Example 1: Get the working package
-```
+```PowerShell
 PS C:\> Get-AatWorkingPackage
 example-1
 ```

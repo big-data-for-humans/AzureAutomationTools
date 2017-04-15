@@ -28,28 +28,28 @@ Creates a new assets file in the assets folder for the working package. This can
 ## EXAMPLES
 
 ### Example 1: Create an assets file for all asset types
-```
+```PowerShell
 PS C:\> New-AatAssetsFile -Name all-assets.json -All
 ```
 
 This will create the file *all-assets.json* in the package assets folder.
 
 ### Example 2: Create an assets file just for variables
-```
+```PowerShell
 PS C:\> New-AatAssetsFile -Name variables-assets.json -IncludeVariables
 ```
 
 This will create the file *variables-assets.json* in the package assets folder.
 
 ### Example 3: Create an assets file for variables and creentials
-```
+```PowerShell
 PS C:\> New-AatAssetsFile -Name variables-and-credential-assets.json -IncludeVariables -IncludeCredentials
 ```
 
 This will create the file *variables-and-credential-assets.json* in the package assets folder.
 
 ### Example 4: Create an empty assets file
-```
+```PowerShell
 PS C:\> New-AatAssetsFile -Name empty.json
 ```
 

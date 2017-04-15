@@ -27,7 +27,7 @@ Creates a new variable.
 ## EXAMPLES
 
 ### Example 1: Create a variable
-```
+```PowerShell
 PS C:\> New-AatPackageVariable -Name var -Value 1
 
 Name IsEncrypted Value
@@ -36,7 +36,7 @@ var        False     1
 ```
 
 ### Example 2: Create an encrypted variable
-```
+```PowerShell
 PS C:\> New-AatPackageVariable -Name var -IsEncrypted
 
 Name IsEncrypted Value
@@ -47,7 +47,7 @@ var         True
 Note: Values are not supported for encypted variables. These must be set securely after publishing.
 
 ### Example 3: Create a variable as json
-```
+```PowerShell
 PS C:\> New-AatPackageVariable -Name var -Value 1 -AsJson
 {
     "Name":  "var",
@@ -161,4 +161,8 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ### System.Management.Automation.PSCustomObject
 
 ### System.String
+
+## NOTES
+
+## RELATED LINKS
 

@@ -21,7 +21,7 @@ Sets the working package - this must be a folder in the working package folder
 ## EXAMPLES
 
 ### Example 1: Set the working package
-```
+```PowerShell
 PS C:\> Set-AatWorkingPackage -PackageName example
 ```
 

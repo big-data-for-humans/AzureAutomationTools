@@ -22,7 +22,7 @@ unless explicitly set using *Set-AatWorkingFolder*.
 ## EXAMPLES
 
 ### Example 1: Get the working folder
-```
+```PowerShell
 PS C:\> Get-AatWorkingFolder
 C:\aat-package-examples\
 ```

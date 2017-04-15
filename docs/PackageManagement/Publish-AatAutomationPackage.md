@@ -11,10 +11,19 @@ Publish automation resources: runbooks, modules and assets (variables & credenti
 
 ## SYNTAX
 
+### NamedPackages (Default)
 ```
-Publish-AatAutomationPackage -ResourceGroupName <String> -AutomationAccountName <String> [-Paths <String[]>]
- [-DeployRunbooks] [-DeployModules] [-DeployVariables] [-DeployCredentials] [-NewCredentialsOnly]
- [-JsonAssetDepth <Int32>] [-RunbookFilter <String>] [-AssetsFilter <String>] [-WhatIf] [-Confirm]
+Publish-AatAutomationPackage -ResourceGroupName <String> -AutomationAccountName <String> [-DeployRunbooks]
+ [-DeployModules] [-DeployVariables] [-DeployCredentials] [-NewCredentialsOnly] [-JsonAssetDepth <Int32>]
+ [-RunbookFilter <String>] [-AssetsFileFilter <String>] [-PackageName <String[]>] [-WhatIf] [-Confirm]
+ [<CommonParameters>]
+```
+
+### AllPackages
+```
+Publish-AatAutomationPackage -ResourceGroupName <String> -AutomationAccountName <String> [-DeployRunbooks]
+ [-DeployModules] [-DeployVariables] [-DeployCredentials] [-NewCredentialsOnly] [-JsonAssetDepth <Int32>]
+ [-RunbookFilter <String>] [-AssetsFileFilter <String>] [-AllPackages] [-WhatIf] [-Confirm]
  [<CommonParameters>]
 ```
 
@@ -25,26 +34,11 @@ account.
 ## EXAMPLES
 
 ### Example 1: Publish all packages
-```
-PS C:\> Publish-AatAutomationPackage -ResourceGroupName rg -AutomationAccountName aa
+```PowerShell
+PS C:\> Publish-AatAutomationPackage -ResourceGroupName rg -AutomationAccountName aa -AllPackages
 ```
 
 ## PARAMETERS
-
-### -AssetsFilter
-Only assets in files matching the filter will be published.
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases: 
-
-Required: False
-Position: Named
-Default value: *.json
-Accept pipeline input: False
-Accept wildcard characters: False
-```
 
 ### -AutomationAccountName
 Name of automation account to publish to.
@@ -167,22 +161,6 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -Paths
-The paths to deploy - if ommitted all folders at the root level (except deploy) will be searched for the specified
-automation resources.
-
-```yaml
-Type: String[]
-Parameter Sets: (All)
-Aliases: 
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -ResourceGroupName
 Name of resource group to publish to.
 
@@ -221,6 +199,51 @@ The cmdlet is not run.
 Type: SwitchParameter
 Parameter Sets: (All)
 Aliases: wi
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -AllPackages
+Deploys all packages in the current working folder.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: AllPackages
+Aliases: 
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -AssetsFileFilter
+Filter to apply to assets files. Default *.json.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases: 
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -PackageName
+Name of the package to deploy.
+
+```yaml
+Type: String[]
+Parameter Sets: NamedPackages
+Aliases: 
 
 Required: False
 Position: Named

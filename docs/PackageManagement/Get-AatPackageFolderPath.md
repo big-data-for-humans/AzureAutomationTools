@@ -32,19 +32,19 @@ Gets the specifed package folder path - this is a concatenation of Get-WorkingFo
 ## EXAMPLES
 
 ### Example 1: Get Assets folder path
-```
+```PowerShell
 PS C:\> Get-AatPackageFolderPath -Assets
 C:\aat-package-examples\example-1\assets
 ```
 
 ### Example 2: Get Modules folder path
-```
+```PowerShell
 PS C:\> Get-AatPackageFolderPath -Modules
 C:\aat-package-examples\example-1\Modules
 ```
 
 ### Example 3: Get Runbooks folder path
-```
+```PowerShell
 PS C:\> Get-AatPackageFolderPath -Runbooks
 C:\aat-package-examples\example-1\Runbooks
 PS C:\>
@@ -107,6 +107,7 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## OUTPUTS
 
 ### System.Object
+
 ## NOTES
 
 ## RELATED LINKS

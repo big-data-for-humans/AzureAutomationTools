@@ -29,28 +29,28 @@ Adds a variable defintion to an assets file, by default this use the default ass
 ## EXAMPLES
 
 ### Example 1: Add a plaintext variable
-```
+```PowerShell
 PS> Add-AatPackageVariable -Name 'plain-value' -Value 'some value'
 ```
 
 Adds the variable *plain-value* to the default assets file.
 
 ### Example 2: Add a enrypted variable
-```
+```PowerShell
 PS> Add-AatPackageVariable -Name 'encrypted-value' -IsEncrypted
 ```
 
 Adds the variable *encrypted-value* to the default assets file.
 
 ### Example 3: Add a plaintext variable to a specific assets file
-```
+```PowerShell
 PS> Add-AatPackageVariable -Name 'simple-value' -Value 'some-value' -AssetsFileName some-assets
 ```
 
 Adds the varaible *simple-value* to the *some-assets* assets file.
 
 ### Example 4: Add a complex variable
-```
+```PowerShell
 PS> $ObjectVariable = [pscutomobject]@{StringProperty = 'lorem'; IntProperty = 1; ObjectProperty = [pscutomobject]@{StringProperty='Ipsum';FloatProperty = 17.3}
     PS> Add-AatPackageVariable -Name 'complex-value' -Value $ObjectVariable
 ```

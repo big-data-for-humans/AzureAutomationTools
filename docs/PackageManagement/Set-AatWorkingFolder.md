@@ -21,7 +21,7 @@ Sets the working packages folder, this folder will continue to be used regardles
 ## EXAMPLES
 
 ### Example 1: Set the working folder
-```
+```PowerShell
 PS C:\> Set-AatWorkingFolder -Path c:\aat-package-examples
 ```
 

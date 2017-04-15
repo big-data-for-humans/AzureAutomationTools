@@ -21,7 +21,7 @@ Gets the package path for the working package.
 ## EXAMPLES
 
 ### Example 1: Get the package path
-```
+```PowerShell
 PS C:\> Get-AatPackagePath
 C:\aat-package-examples\example-1
 ```

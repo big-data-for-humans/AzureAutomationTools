@@ -21,7 +21,7 @@ Tests an automation package. If no package name is specified then the current wo
 ## EXAMPLES
 
 ### Example 1: Test the current working package
-```
+```PowerShell
 PS C:\> Test-AatAutomationPackage
 
 Message                                                                Severity
@@ -32,7 +32,7 @@ No runbooks found in  'C:\aat-package-examples\bad\runbooks'           Warning
 ```
 
 ### Example 2: Test the current working package and ignore warnings
-```
+```PowerShell
 PS C:\> Test-AatAutomationPackage -IgnoreWarnings
 
 Message                                                                Severity
@@ -41,7 +41,7 @@ Assets file 'assets.json' does not contain any of the supported prop   Error
 ```
 
 ### Example 3: Test a specified package
-```
+```PowerShell
 PS C:\> Test-AatAutomationPackage -PackageName example-3
 
 Message                                                                Severity

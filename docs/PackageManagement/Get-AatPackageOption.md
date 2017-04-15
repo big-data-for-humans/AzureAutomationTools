@@ -21,7 +21,7 @@ Gets the current package options e.g. AssetsFolderName, AssetsFileName, JsonAsse
 ## EXAMPLES
 
 ### Example 1: Get options
-```
+```PowerShell
 PS C:> Get-AatPackageOption
 
 Name                           Value

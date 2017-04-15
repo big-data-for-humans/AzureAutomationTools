@@ -23,32 +23,32 @@ Gets the current package options e.g. AssetsFolderName, AssetsFileName, JsonAsse
 ## EXAMPLES
 
 ### Example 1: Set the assets folder
-```
+```PowerShell
 PS C:\> Set-AatPackageOption -AssetsFolderName example-assets
 ```
 
 ### Example 2: Set the default file for assets
-```
+```PowerShell
 PS C:\> Set-AatPackageOption -AssetsFileName example-assets.json
 ```
 
 ### Example 3: Set the folder for modules
-```
+```PowerShell
 PS C:\> Set-AatPackageOption -ModulesFolderName example-modules
 ```
 
 ### Example 4: Set the folder for runbooks
-```
+```PowerShell
 PS C:\> Set-AatPackageOption -RunbooksFolderName example-runbooks
 ```
 
 ### Example 5: Set the encoding for package files
-```
+```PowerShell
 PS C:\> Set-AatPackageOption -Encoding Unicode
 ```
 
 ### Example 6: Setting all options
-```
+```PowerShell
 PS C:\> Set-AatPackageOption -AssetsFolderName example-assets -AssetsFileName example-assets.json -ModulesFolderName example-modules -RunbooksFolderName example-runbooks -Encoding Unicode
 ```
 

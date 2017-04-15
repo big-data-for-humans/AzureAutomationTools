@@ -244,9 +244,9 @@ function New-AatAutomationPackage {
             Add-AatPackageVariable -AssetsFileName $SampleAssetsFileName -Name 'simple-plaintext-variable'  -Value 'lorem'
             Add-AatPackageVariable -AssetsFileName $SampleAssetsFileName -Name 'simple-encrypted-variable'  -IsEncrypted
             $Object = @{
-                SimpleProperty = 'Lorem';
+                SimpleProperty = 'Lorem'
                 ComplexProperty = @{
-                    Ipsum = 1;
+                    Ipsum = 1
                     Dolor = 'monkey'
                 }
             }
@@ -336,10 +336,10 @@ function Test-AatAutomationPackage {
                 }                
                 
                 if ($Assets.psobject.properties | Where-Object Name -eq 'Variables') {
-                    $i = 0;
+                    $i = 0
 
                     $Assets.Variables | ForEach-Object {
-                        $i++;
+                        $i++
                         if (-not ($_.psobject.properties | Where-Object Name -eq 'Name')) {
                             $TestResults += New-Object -TypeName PackageTestResult -ArgumentList "Variable definition [$i] in '$AssetsFilePath' missing required property [Name]", 'Error'                    
                         }
@@ -487,7 +487,7 @@ function New-AatPackageVariable {
         $ret = $Variable
 
         if ($AsJson.IsPresent) {
-            $ret = $ret | ConvertTo-Json -Depth $Script:Options.JsonAssetDepth;
+            $ret = $ret | ConvertTo-Json -Depth $Script:Options.JsonAssetDepth
         }                
         
         $ret
@@ -539,14 +539,14 @@ function Add-AatPackageVariable {
 
         Write-verbose -Message "Assets file path: '$AssetsFilePath'"
 
-        $Assets = Get-Content -Raw $AssetsFilePath | ConvertFrom-Json
+        $Assets = Get-Content -Raw -Path $AssetsFilePath | ConvertFrom-Json
 
         if (($Assets.Variables | Where-Object Name -eq $Name)) {
             throw "Cannot add variable [$Name], '$AssetsFilePath' already contains a definition for [$Name]."        
         }
         
         $Assets.Variables += $Variable
-        $Json = $Assets | ConvertTo-Json -Depth ($Script:Options.JsonAssetDepth + 2);
+        $Json = $Assets | ConvertTo-Json -Depth ($Script:Options.JsonAssetDepth + 2)
         $Json | Out-File -FilePath $AssetsFilePath -Encoding $Script:Options.Encoding 
     }
 }
@@ -563,7 +563,7 @@ function DeployRunbooks {
         [string]$Filter
     )
 
-    $RunbooksRoot = Join-Path -Path $Path -ChildPath 'runbooks';
+    $RunbooksRoot = Join-Path -Path $Path -ChildPath 'runbooks'
 
     Write-Verbose -Message "Runbooks Root: '$RunbooksRoot'"
 
@@ -572,24 +572,24 @@ function DeployRunbooks {
     }
 
     Get-ChildItem -Path $RunbooksRoot -File -Filter $Filter | ForEach-Object {
-        $CommonParameters;
+        $CommonParameters
         
-        $ExistingRunbooks = @();
-        $ExistingRunbooks += (Get-AzureRmAutomationRunbook @CommonParameters| Select-Object Name) | ForEach-Object {$_.Name};
+        $ExistingRunbooks = @()
+        $ExistingRunbooks += (Get-AzureRmAutomationRunbook @CommonParameters| Select-Object Name) | ForEach-Object {$_.Name}
         
         if ($ExistingRunbooks.Contains($_.BaseName)) {
-            Write-Output "Removing existing runbook $($_.BaseName) ...";
+            Write-Output "Removing existing runbook $($_.BaseName) ..."
             
-            Remove-AzureRmAutomationRunbook @CommonParameters -Name $_.BaseName -Force;
+            Remove-AzureRmAutomationRunbook @CommonParameters -Name $_.BaseName -Force
             
-            Write-Output "Removing existing runbook $($_.BaseName) - done.";
+            Write-Output "Removing existing runbook $($_.BaseName) - done."
         }
         
-        Write-Output "Importing runbook $($_.BaseName) ...";
+        Write-Output "Importing runbook $($_.BaseName) ..."
         
-        Import-AzureRmAutomationRunbook -Name $_.BaseName -Type 'PowerShell' -Path $_.FullName -Published @CommonParameters ;
+        Import-AzureRmAutomationRunbook -Name $_.BaseName -Type 'PowerShell' -Path $_.FullName -Published @CommonParameters 
         
-        Write-Output "Importing runbook $($_.BaseName) - done.";
+        Write-Output "Importing runbook $($_.BaseName) - done."
     }
 }
 
@@ -616,41 +616,41 @@ function DeployAssets {
     
     Get-ChildItem -Path $AssetsRoot -File -Filter $Filter | ForEach-Object {
         Write-Output "Assets File: '$($_.FullName)'"
-        #Write-Output (Get-Content $_.FullName -Raw) 
-        $Assets = Get-Content $_.FullName -Raw | ConvertFrom-Json;
+        
+        $Assets = Get-Content -Path $_.FullName -Raw | ConvertFrom-Json
                 
-        $ExistingVariables = @();
-        $ExistingVariables += (Get-AzureRmAutomationVariable @CommonParameters| Select-Object Name) | ForEach-Object {$_.Name};
+        $ExistingVariables = @()
+        $ExistingVariables += (Get-AzureRmAutomationVariable @CommonParameters| Select-Object Name) | ForEach-Object {$_.Name}
     
         if ($DeployVariables) {
             $Assets.Variable | ForEach-Object {
                 if ($_.Encrypted) {
-                    $Value = 'totally not the value!';
+                    $Value = 'totally not the value!'
                 }
                 elseif (('Int32', 'Boolean', 'String', 'Double').Contains($_.Value.GetType().Name)) {
-                    $Value = $_.Value;
+                    $Value = $_.Value
                 }
                 else {
-                    $Value = $_.Value | ConvertTo-Json -Depth $JsonAssetDepth;
+                    $Value = $_.Value | ConvertTo-Json -Depth $JsonAssetDepth
                 }
             
                 $Params = @{Name = $_.Name; Encrypted = $_.Encrypted; Value = $Value}
                 $Params += $CommonParameters
 
                 if ($ExistingVariables.Contains($_.Name)) {
-                    Write-Output "Updating existing variable [$($_.Name)] ...";
+                    Write-Output "Updating existing variable [$($_.Name)] ..."
 
-                    Set-AzureRmAutomationVariable @Params;
+                    Set-AzureRmAutomationVariable @Params
 
-                    Write-Output "Updating existing variable [$($_.Name)] - done.";
+                    Write-Output "Updating existing variable [$($_.Name)] - done."
 
                 }
                 else {
-                    Write-Output "Creating new variable [$($_.Name)] ..";
+                    Write-Output "Creating new variable [$($_.Name)] .."
 
-                    New-AzureRmAutomationVariable @Params;
+                    New-AzureRmAutomationVariable @Params
 
-                    Write-Output "Creating new variable [$($_.Name)] - done.";
+                    Write-Output "Creating new variable [$($_.Name)] - done."
                 }
                 
                 if ($_.Encrypted) {
@@ -664,38 +664,38 @@ function DeployAssets {
                 Write-Warning "No credentials found in [$($_.FullName)]."
             }
             else { 
-                $ExistingCredentials = @();
-                $ExistingCredentials += (Get-AzureRmAutomationCredential @CommonParameters| Select-Object Name) | ForEach-Object {$_.Name};
+                $ExistingCredentials = @()
+                $ExistingCredentials += (Get-AzureRmAutomationCredential @CommonParameters| Select-Object Name) | ForEach-Object {$_.Name}
 
                 $Assets.PSCredential | ForEach-Object {
                     # See https://github.com/PowerShell/PSScriptAnalyzer/issues/574 
-                    #$Password = [guid]::NewGuid() | ConvertTo-SecureString -asPlainText -Force; 
-                    $Password = [SecureString]::new();
+                    #$Password = [guid]::NewGuid() | ConvertTo-SecureString -asPlainText -Force
+                    $Password = [SecureString]::new()
                     (New-Guid).Guid.ToCharArray() | ForEach-Object {$Password.AppendChar($_)} # i.e. definitely not the password
-                    $Username = $_.Username;
-                    $Credential = New-Object System.Management.Automation.PSCredential($Username, $Password);
+                    $Username = $_.Username
+                    $Credential = New-Object System.Management.Automation.PSCredential($Username, $Password)
                     $Params = @{Name = $_.Name; Value = $Credential; }
                     $Params += $CommonParameters
 
                     if ($ExistingCredentials.Contains($_.Name)) {
                         if ($NewCredentialsOnly) {
-                            Write-Output "Skipping existing credential [$($_.Name)].";    
+                            Write-Output "Skipping existing credential [$($_.Name)]."
                         }
                         else {
-                            Write-Output "Updating existing credential [$($_.Name)] ...";
+                            Write-Output "Updating existing credential [$($_.Name)] ..."
 
-                            Set-AzureRmAutomationCredential @Params ;
+                            Set-AzureRmAutomationCredential @Params 
 
-                            Write-Output "Updating existing credential [$($_.Name)] - done.";
+                            Write-Output "Updating existing credential [$($_.Name)] - done."
                             Write-Warning "Password must be manually set for credential $($_.Name)"
                         }
                     }
                     else {
-                        Write-Output "Creating new credential [$($_.Name)] ...";
+                        Write-Output "Creating new credential [$($_.Name)] ..."
 
-                        New-AzureRmAutomationCredential @Params;
+                        New-AzureRmAutomationCredential @Params
                     
-                        Write-Output "Creating new credential [$($_.Name)] - done.";
+                        Write-Output "Creating new credential [$($_.Name)] - done."
                         Write-Warning "Password must be manually set for credential [$($_.Name)]"
                     }
                 }
@@ -712,7 +712,7 @@ function DeployModules {
         [string]$Path
     )
 
-    $ModulesRoot = Join-Path -Path $Path -ChildPath 'modules';
+    $ModulesRoot = Join-Path -Path $Path -ChildPath 'modules'
 
     if (!Test-Path $ModulesRoot) {
         throw "Path not found: '$ModulesRoot'"
@@ -721,9 +721,9 @@ function DeployModules {
     Write-Output "Modules Root: '$ModulesRoot'"
     
     Get-ChildItem -Path $ModulesRoot -File -Filter '*.json' | ForEach-Object {
-        Write-Output "Modules file: '$($_.FullName)'";
-        $Modules = Get-Content $_.FullName -Raw | ConvertFrom-Json;
-        $ExistingModules = (Get-AzureRmAutomationModule @CommonParameters| Select-Object 'Name', 'Version');
+        Write-Output "Modules file: '$($_.FullName)'"
+        $Modules = Get-Content -Path $_.FullName -Raw | ConvertFrom-Json
+        $ExistingModules = (Get-AzureRmAutomationModule @CommonParameters| Select-Object 'Name', 'Version')
             
         foreach ($Module in $Modules) {
             $ContentLink = $PackageRootUri + $Module.Package
@@ -732,21 +732,21 @@ function DeployModules {
        
             #FIX failing - version property is coming back blank
             if ($ExistingModules.Where( {$_.Name -eq $Module.Name -and $_.Version -eq $Module.Version})) {
-                Write-Output "Existing module up to date - skipping.";
+                Write-Output "Existing module up to date - skipping."
             }
             elseif ($ExistingModules.Where( {$_.Name -eq $Module.Name })) {           
-                Write-Output "Updating existing module ...";
+                Write-Output "Updating existing module ..."
             
-                Set-AzureRmAutomationModule -ContentLinkUri $ContentLink  @Params;
+                Set-AzureRmAutomationModule -ContentLinkUri $ContentLink  @Params
             
-                Write-Output "Updating existing module - done.";
+                Write-Output "Updating existing module - done."
             }
             else {
-                Write-Output "Adding new module ...";
+                Write-Output "Adding new module ..."
             
                 New-AzureRmAutomationModule -ContentLink $ContentLink @Params
 
-                Write-Output "Adding new module - done.";
+                Write-Output "Adding new module - done."
             }
         }
     }
@@ -797,35 +797,35 @@ function Publish-AatAutomationPackage {
 
             if ($DeployRunbooks) {
                 Write-Output "INFO: Deploying runbooks from '$_'."
-                DeployRunbooks -Path $_ -Filter $RunbookFilter;
+                DeployRunbooks -Path $_ -Filter $RunbookFilter
                 Write-Output "INFO: Deploying runbooks from '$_' - done."
             }
 
             if ($DeployModules) {
                 Write-Output "INFO: Deploying modules from '$_'."
-                DeployModules -Path $_;
+                DeployModules -Path $_
                 Write-Output "INFO: Deploying modules from '$_'- done."
             }
 
             if ($DeployAssets) {
                 Write-Output "INFO: Deploying assets from '$_'."
-                DeployAssets -Path $_ -Filter $AssetsFilter;
+                DeployAssets -Path $_ -Filter $AssetsFilter
                 Write-Output "INFO: Deploying assets from '$_' - done."
             }
 
             if (($DeployRunbooks -or $DeployModules) -or $DeployAssets) {
-                $VariableName = '~LastDeploymentTime';
-                $Value = (Get-Date).ToUniversalTime().ToString('s') + 'Z';
-                $Params = @{Name = $VariableName};
-                $Params += $CommonParameters;
+                $VariableName = '~LastDeploymentTime'
+                $Value = (Get-Date).ToUniversalTime().ToString('s') + 'Z'
+                $Params = @{Name = $VariableName}
+                $Params += $CommonParameters
                 $Variable = (Get-AzureRmAutomationVariable @Params -ErrorAction 'Ignore')
                 $Params += @{Encrypted = $false; Value = $Value}
 
                 if (!$Variable) {
-                    New-AzureRmAutomationVariable @Params;
+                    New-AzureRmAutomationVariable @Params
                 }
                 else {
-                    Set-AzureRmAutomationVariable @Params;
+                    Set-AzureRmAutomationVariable @Params
                 }
             }
             else {

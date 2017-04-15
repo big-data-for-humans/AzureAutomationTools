@@ -116,7 +116,7 @@ if($FindTopLevelHeader.IsPresent){
     }
 }
 
-$Lines = $Lines | select -Skip $LineNumber #| % { if($_ -notmatch '^\s*$'){$_}}
+$Lines = $Lines | Select-Object -Skip $LineNumber
 
 $Nodes = New-Object -TypeName 'System.Collections.Generic.List[Node]'
 
@@ -174,7 +174,7 @@ while ($LineNumber -lt $Lines.Count){
 }
 
 if($SkipEmptySecondLevelSections.IsPresent){
-    $NodesToRemove = $Nodes[0].ChildNodes| ? {-not $_.HasNonEmptyBodyText() -and -not $_.HasChildren()} 
+    $NodesToRemove = $Nodes[0].ChildNodes| Where-Object {-not $_.HasNonEmptyBodyText() -and -not $_.HasChildren()} 
 
     $NodesToRemove | % {
         $Nodes[0].ChildNodes.Remove($_) | Out-Null

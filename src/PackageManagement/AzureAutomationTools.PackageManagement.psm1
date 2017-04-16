@@ -38,7 +38,7 @@ function Get-AatWorkingFolder {
     $ret = $Script:WorkingFolder 
 
     if (-not $Script:WorkingFolder) {
-        $ret = $Pwd.Path
+        throw "Working folder not set. Please set using Set-AatWorkingFolder." 
     }
 
     $ret

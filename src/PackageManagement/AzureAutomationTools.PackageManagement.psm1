@@ -142,7 +142,9 @@ function Set-AatPackageOption {
     }
 }
 
+
 function Get-AatPackageOption {
+    [OutputType('System.Collections.HashTable')] 
     [CmdletBinding(PositionalBinding = $false)]
     param()    
     

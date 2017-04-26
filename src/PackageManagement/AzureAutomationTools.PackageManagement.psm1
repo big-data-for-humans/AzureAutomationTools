@@ -158,19 +158,32 @@ function Get-AatPackagePath {
     $PackagePath
 }
 
-function Get-AatPackageFolderPath {
+function Get-AatPackageFolderPath {    
     [CmdletBinding(PositionalBinding = $false)]
     param(
         [Parameter(Mandatory = $true, ParameterSetName = 'Assets')]
         [switch]$Assets,
+        
         [Parameter(Mandatory = $true, ParameterSetName = 'Modules')]
         [switch]$Modules,
+        
         [Parameter(Mandatory = $true, ParameterSetName = 'Runbooks')]
-        [switch]$Runbooks
+        [switch]$Runbooks,
+
+        [ValidateNotNullOrEmpty()]
+        [string]$PackageName
     )
 
     $ret = $null
-    $PackagePath = Get-AatPackagePath
+
+    if(-not $PackageName){
+        $PackagePath = Get-AatPackagePath
+    } 
+    else {
+        $PackagePath = Get-AatPackagePath -PackageName $PackageName
+    }
+
+    
     $FolderName = $null
     
     switch ($true) {

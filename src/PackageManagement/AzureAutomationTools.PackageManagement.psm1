@@ -551,6 +551,120 @@ function Add-AatPackageVariable {
     }
 }
 
+function New-AatModulesFile {
+    [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'Low', PositionalBinding = $false)]
+    param (
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string]$Name,
+
+        [Parameter(Mandatory = $false)]
+        [switch]$IncludeSamples,
+
+        [Parameter()]
+        [switch]$Force
+    )
+
+    if ($PSCmdlet.ShouldProcess($Name, "Create modules file")) {
+        $Content = [System.Collections.Generic.List[hashtable]]::new()
+
+        if ($IncludeSamples.IsPresent) {
+            $Content += @(
+                [ordered]@{
+                    Name = 'AzureRm.Storage'
+                    Version = '2.7.0'
+                },
+                [ordered]@{
+                    Name = 'CustomPackage'
+                    Package = 'https://[storageaccountname].blob.core.windows.net/[ContainerName]/CustomPackage.zip'
+                }
+            )
+        }
+
+        $FilePath = Join-Path -Path (Get-AatPackageFolderPath -Modules) -ChildPath "$Name.json"
+        New-Item -Path $FilePath -Force:$Force
+        if ($Content.Count -gt 0) {
+            $Content | ConvertTo-Json | Set-Content -Path $FilePath
+        }
+        else {
+            Set-Content -Path $FilePath -Value '[]'
+        }
+    }
+}
+
+function New-AatPackageModule {
+    [CmdletBinding(PositionalBinding = $false,
+                    DefaultParameterSetName = 'WithoutPackage')]
+    param (
+        [Parameter(Mandatory = $true)]
+        [Parameter(ParameterSetName = 'WithoutPackage')]
+        [Parameter(ParameterSetName = 'WithPackage')]
+        [string]
+        $Name,
+
+        [Parameter(Mandatory = $false)]
+        [Parameter(ParameterSetName = 'WithoutPackage')]
+        [Parameter(ParameterSetName = 'WithPackage')]
+        [string]
+        $Version,
+
+        [Parameter(Mandatory = $true,
+                    ParameterSetName = 'WithPackage')]
+        [string]
+        $Package,
+
+        [Parameter(Mandatory = $true)]
+        [Parameter(ParameterSetName = 'WithoutPackage')]
+        [Parameter(ParameterSetName = 'WithPackage')]
+        [string]
+        $ModuleFileName
+    )
+
+    if ($ModuleFileName -notmatch "^*/.json$") {
+        $ModuleFileName += '.json'
+    }
+
+    $ModuleFilePath = Join-Path -Path (Get-AatPackageFolderPath -Modules) -ChildPath $ModuleFileName
+    $ModuleFileObj = Get-Content -Raw -Path $ModuleFilePath | 
+        ConvertFrom-Json
+
+    if($PSCmdlet.ParameterSetName -eq 'WithoutPackage') {
+        $ModuleObj = GetModuleBlob -ModuleList @{Name=$Name;Version=$Version}
+    }
+    else{
+        $ModuleObj = [pscustomobject]@{
+            Name = $Name
+            Version = $Version
+            Package = $Package
+        }
+    }
+
+    $CurrentEntries = $ModuleFileObj | Where-Object {$_.Name -in $ModuleObj.Name}
+    if ($CurrentEntries) {
+        $BadEntries = @()
+        $GoodEntries = @()
+        $CurrentEntries | ForEach-Object {
+            $ModuleObjVersion = $ModuleObj | Where-Object Name -eq $_.Name | Select-Object -ExpandProperty Version
+
+            if ($_.Version -ne $ModuleObjVersion) {
+                $BadEntries += "[$($_.Name)](Expected: $ModuleObjVersion, Actual: $($_.Version))"
+            }
+            else {
+                $GoodEntries += $_.Name
+            }
+        }
+
+        if ($BadEntries.Count -gt 0) {
+            throw "Module version descrepency found: $([string]::join('; ', $BadEntries)). Please remove these modules from the modules file."
+        }  
+        else {
+            $ModuleObj = $ModuleObj | Where-Object Name -NotIn $GoodEntries
+        }
+    }
+
+    $ModuleFileObj + $ModuleObj | ConvertTo-Json | Set-Content -Path $ModuleFilePath
+}
+
 function DeployRunbooks {
     [CmdletBinding(PositionalBinding = $false)]
     param(
@@ -719,7 +833,11 @@ function DeployModules {
     param(
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [string]$Path
+        [string]$Path,
+
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [int]$MaxModulePoll = 100
     )
 
     $ModulesRoot = Join-Path -Path $Path -ChildPath 'modules'
@@ -747,7 +865,25 @@ function DeployModules {
             $ContentLink = $Module.Package
             $Params = @{Name = $Module.Name; }
             $Params += $CommonParameters
-       
+            
+            $ModuleQuery = @{
+                Name = $Module.Name
+            }
+            $ModuleQuery += $CommonParameters
+            $ExistingModule = Get-AzureRmAutomationModule @ModuleQuery
+
+            if ($null -eq $ExistingModule) {
+                Write-Output "Adding new module: $($Module.Name) $($Module.Version)"
+                New-AzureRmAutomationModule -ContentLink $ContentLink @Params
+            }
+            elseif ($ExistingModule.Version -ne $Module.Version) {
+                Write-Output "Changing existing module: $($Module.Name) $($ExistingModule.Version) --> $($Module.Version)"
+                Set-AzureRmAutomationModule -ContentLinkUri $ContentLink @Params
+            }
+            else {
+                Write-Output "Module up to date: $($Module.Name) $($Module.Version)"
+            }
+
             #FIX failing - version property is coming back blank
             if ($ExistingModules.Where( {$_.Name -eq $Module.Name -and $_.Version -eq $Module.Version})) {
                 Write-Output "Existing module up to date - skipping."
@@ -755,17 +891,42 @@ function DeployModules {
             elseif ($ExistingModules.Where( {$_.Name -eq $Module.Name })) {           
                 Write-Output "Updating existing module ..."
             
-                Set-AzureRmAutomationModule -ContentLinkUri $ContentLink  @Params
+                $AutomationModule = Set-AzureRmAutomationModule -ContentLinkUri $ContentLink  @Params
             
                 Write-Output "Updating existing module - done."
             }
             else {
                 Write-Output "Adding new module ..."
             
-                New-AzureRmAutomationModule -ContentLink $ContentLink @Params
+                $AutomationModule = New-AzureRmAutomationModule -ContentLink $ContentLink @Params
 
                 Write-Output "Adding new module - done."
             }
+
+            $PollCount = 0
+            # Wait by default (for dependency purposes). TODO: Add this to the module config
+            while($PollCount -lt $MaxModulePoll -and 
+                $AutomationModule.ProvisioningState -ne 'Succeeded' -and
+                $AutomationModule.ProvisioningState -ne 'Failed') {
+                    $PollCount++
+                    Start-Sleep -Seconds 10
+                    Write-Verbose "Polling for $($Module.Name) completion..."
+                    $AutomationModule = $AutomationModule | Get-AzureRmAutomationModule
+            }
+
+            if ($PollCount -eq $MaxModulePoll -and 
+                $AutomationModule.ProvisioningState -ne 'Succeeded' -and
+                $AutomationModule.ProvisioningState -ne 'Failed') {
+                Write-Error -Message "Failed to upload module: $($Module.Name) - PollCount reached max limit."
+                continue
+            }
+
+            if ($AutomationModule.ProvisioningState -eq 'Failed') {
+                Write-Error -Message "Failed to upload module: $($Module.Name) - ProvisioningState Failed"
+                continue
+            }
+
+            Write-Output -Message "Completed upload of $($Module.Name)"
         }
     }
 }
@@ -874,5 +1035,185 @@ function Publish-AatAutomationPackage {
             
             Write-Verbose -Message "Searching '$_' - done."
         }
+    }
+}
+
+function GetModuleBlob
+{
+    [CmdletBinding(DefaultParameterSetName = 'ByName')]
+    [OutputType([pscustomobject[]])]
+    param (
+        [Parameter(Mandatory = $true,
+                    ParameterSetName = 'ByName')]
+        [ValidateNotNullOrEmpty()]
+        [string]
+        $Name,
+
+        [Parameter(ParameterSetName = 'ByName')]
+        [ValidateNotNullOrEmpty()]
+        [string]
+        $Version,
+
+        # @{ModuleName=<Name>; ModuleVersion=<Version>}
+        [Parameter(Mandatory = $true,
+                    ParameterSetName = 'ByModuleList')]
+        [hashtable[]]
+        $ModuleList,
+
+        [Parameter(ParameterSetName = 'ByName')]
+        [Parameter(ParameterSetName = 'ByModuleList')]
+        [switch]
+        $IgnoreDependencies,
+
+        [Parameter()]
+        [System.Collections.Generic.List[pscustomobject]]
+        $FinalList
+    )
+
+    begin {
+        if ($null -eq $FinalList) {
+            Write-Verbose "Creating FinalList"
+            $FinalList = [System.Collections.Generic.List[PSCustomObject]]::new()
+        }
+
+        if ($PsCmdlet.ParameterSetName -eq 'ByName') {
+            $ModuleList += @{Name = $Name}
+            if (-not [string]::IsNullOrWhiteSpace($Version)) {
+                $ModuleList[0]['Version'] = $Version
+            }
+        }
+    }
+
+    process {
+        foreach ($ModuleEntry in $ModuleList) {
+            $InfoSplat = @{Name = $ModuleEntry.Name}
+            if ($ModuleEntry['Version'] -and
+                -not [string]::IsNullOrWhiteSpace($ModuleEntry.Version)) {
+                $InfoSplat['Version'] = $ModuleEntry.Version
+            }
+            $Info = GetModuleInfo @infoSplat
+            if (-not $Info) {
+                continue
+            }
+
+            $Name = $info.title.'#text'
+            $Version = $info.properties.version
+
+            if (-not $version) {
+                throw "Cannot resolve version of module '$Name'. Please check module name!"
+                continue
+            }
+            
+            if ($FinalList.Where({$_.Name -eq $name -and $_.Version -eq $Version})) {
+                Write-Verbose "Module '$Name' is already in the FullList. Skipping addition"
+            }
+            else {
+                Write-Verbose "Adding '$Name' to FullList"
+                Write-Verbose "Resolving URL..."
+
+
+                $ModuleContentUrl = "https://www.powershellgallery.com/api/v2/package/$Name/$version"
+                do {
+                    $ModuleContentUrl = (Invoke-WebRequest -Uri $ModuleContentUrl -MaximumRedirection 0 -UseBasicParsing -ErrorAction Ignore).Headers.Location 
+                } while(!$ModuleContentUrl.Contains(".nupkg"))
+                
+                $Entry = [pscustomobject]@{
+                    Name = $Name
+                    Version = $Version
+                    Package = $ModuleContentUrl
+                }
+                $FinalList.Insert(0, $Entry)
+            }
+
+            if (-not $IgnoreDependencies.IsPresent) {
+                $Dependencies = [pscustomobject]$info.properties.Dependencies
+
+                if($Dependencies -and $dependencies.Length -gt 0) {
+                    $Dependencies = $dependencies.Split("|")
+                
+                    $DependencyNames = @()
+                    foreach ($Dependency in $Dependencies) {
+                        if (-not $Dependency -and $Dependency.Length -gt 0) {
+                            continue
+                        }
+
+                        $split = $Dependency.Split(':')
+                        $DependencyName = $split[0]
+                        $DependencyVersion = $split[1] -replace '\[', '' -replace '\]', ''
+
+                        if (-not $DependencyName) {
+                            Write-Verbose 'Dependency has no name. Skipping.'
+                            continue
+                        }
+                    
+                        $CurrentEntry = $FinalList | Where-Object -FilterScript {
+                            $_.Name -eq $DependencyName -and $_.Version -eq $DependencyVersion
+                        }
+
+                        if ($CurrentEntry) {
+                            Write-Verbose "Entry $DependencyName[$dependencyVersion] already exists in the list. Skipping"
+                            continue
+                        }
+
+                        $FinalList = GetModuleBlob -ModuleList @{Name=$dependencyName; Version=$dependencyVersion} -FinalList $FinalList
+                    }
+                }
+            }   
+        }
+
+        return $FinalList.ToArray()
+    }
+}
+
+function GetModuleInfo
+{
+    [CmdletBinding()]
+    param (
+        # Name of the module
+        [Parameter(Mandatory = $true,
+                    ValueFromPipelineByPropertyName = $true)]
+        [Alias('ModuleName')]
+        [string]
+        $Name,
+
+        # Version of the module
+        [Parameter(Mandatory = $false)]
+        [Alias('ModuleVersion')]
+        [string]
+        $Version
+    )
+
+
+    Write-Verbose "Gathering information about module '$Name' : '$Version'"
+
+    if ([string]::IsNullOrWhiteSpace($Version)) {
+        $Url = "https://www.powershellgallery.com/api/v2/Search()?`$filter=IsLatestVersion&searchTerm=%27$Name%27&targetFramework=%27%27&includePrerelease=false&`$skip=0&"
+
+        $Filter = {
+            $_.title.'#text' -eq $Name
+        }
+    }
+    else {
+        $Url = "https://www.powershellgallery.com/api/v2/Search()?searchTerm=%27$Name%27&targetFramework=%27%27&includePrerelease=false&`$skip=0&"
+        $Filter = {
+            $_.title.'#text' -eq $Name -and
+            $_.Properties.Version -eq $Version
+        }
+    }
+
+    Write-Verbose "Querying url: '$Url'"
+    $SearchResult = Invoke-RestMethod -Method Get -Uri $Url -UseBasicParsing
+
+    if($SearchResult -is [Array] -and $SearchResult.Count -and $SearchResult.Count -gt 1) {
+        $SearchResult = $SearchResult | Where-Object -FilterScript $Filter
+    }
+
+    if(-not $SearchResult) {
+        throw "Could not find module '$Name':'$Version' on PowerShell Gallery. This may be a module you imported from a different location"
+    }
+    else {
+        $ModuleName = $SearchResult.title.'#text' # get correct casing for the module name
+        # Output to pipeline
+        Invoke-RestMethod -Method Get -UseBasicParsing -Uri $SearchResult.id | Select -ExpandProperty entry
     }
 }

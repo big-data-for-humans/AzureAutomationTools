@@ -38,7 +38,7 @@ function Get-AatWorkingFolder {
     $ret = $Script:WorkingFolder 
 
     if (-not $Script:WorkingFolder) {
-        $ret = $Pwd.Path
+        throw "Working folder not set. Please set using Set-AatWorkingFolder." 
     }
 
     $ret
@@ -64,6 +64,7 @@ function Get-AatWorkingPackage {
     $ret = $Script:WorkingPackage
 
     if (-not $Script:WorkingPackage) {        
+        Write-Verbose -Message "No working package set - using first folder in $Script:WorkingFolder"
         $ret = (Get-ChildItem -Directory -Path (Get-AatWorkingFolder) | Sort-Object Name | Select-Object -First 1 -ExpandProperty Name)
     }
 
@@ -141,7 +142,9 @@ function Set-AatPackageOption {
     }
 }
 
+
 function Get-AatPackageOption {
+    [OutputType('System.Collections.HashTable')] 
     [CmdletBinding(PositionalBinding = $false)]
     param()    
     

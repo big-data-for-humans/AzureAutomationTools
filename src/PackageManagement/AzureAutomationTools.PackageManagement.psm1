@@ -38,7 +38,7 @@ function Get-AatWorkingFolder {
     $ret = $Script:WorkingFolder 
 
     if (-not $Script:WorkingFolder) {
-        $ret = $Pwd.Path
+        throw "Working folder not set. Please set using Set-AatWorkingFolder." 
     }
 
     $ret
@@ -64,6 +64,7 @@ function Get-AatWorkingPackage {
     $ret = $Script:WorkingPackage
 
     if (-not $Script:WorkingPackage) {        
+        Write-Verbose -Message "No working package set - using first folder in $Script:WorkingFolder"
         $ret = (Get-ChildItem -Directory -Path (Get-AatWorkingFolder) | Sort-Object Name | Select-Object -First 1 -ExpandProperty Name)
     }
 
@@ -141,7 +142,9 @@ function Set-AatPackageOption {
     }
 }
 
+
 function Get-AatPackageOption {
+    [OutputType('System.Collections.HashTable')] 
     [CmdletBinding(PositionalBinding = $false)]
     param()    
     
@@ -150,27 +153,46 @@ function Get-AatPackageOption {
 
 function Get-AatPackagePath {
     [CmdletBinding(PositionalBinding = $false)]
-    param()    
+    param(
+        [string]$PackageName
+    )    
     
     $WorkingFolderPath = Get-AatWorkingFolder
-    $PackageName = Get-AatWorkingPackage
+
+    if (-not $PackageName) {
+        $PackageName = Get-AatWorkingPackage
+    }
+    
     $PackagePath = (Join-Path -Path $WorkingFolderPath -ChildPath $PackageName)
     $PackagePath
 }
 
-function Get-AatPackageFolderPath {
+function Get-AatPackageFolderPath {    
     [CmdletBinding(PositionalBinding = $false)]
     param(
         [Parameter(Mandatory = $true, ParameterSetName = 'Assets')]
         [switch]$Assets,
+        
         [Parameter(Mandatory = $true, ParameterSetName = 'Modules')]
         [switch]$Modules,
+        
         [Parameter(Mandatory = $true, ParameterSetName = 'Runbooks')]
-        [switch]$Runbooks
+        [switch]$Runbooks,
+
+        [ValidateNotNullOrEmpty()]
+        [string]$PackageName
     )
 
     $ret = $null
-    $PackagePath = Get-AatPackagePath
+
+    if (-not $PackageName) {
+        $PackagePath = Get-AatPackagePath
+    } 
+    else {
+        $PackagePath = Get-AatPackagePath -PackageName $PackageName
+    }
+
+    
     $FolderName = $null
     
     switch ($true) {
@@ -280,19 +302,19 @@ function Test-AatAutomationPackage {
 
     Write-Verbose -Message 'Testing package folders ...'
 
-    $AssetsPath = Get-AatPackageFolderPath -Assets
+    $AssetsPath = Get-AatPackageFolderPath -Assets -PackageName $PackageName
 
     if (-not (Test-Path -Path $AssetsPath)) {
         $TestResults += New-Object -TypeName PackageTestResult -ArgumentList "Package folder [Assets] '$AssetsPath' not found", 'Error'
     }
 
-    $ModulesPath = Get-AatPackageFolderPath -Modules
+    $ModulesPath = Get-AatPackageFolderPath -Modules -PackageName $PackageName
 
     if (-not (Test-Path -Path $ModulesPath)) {
         $TestResults += New-Object -TypeName PackageTestResult -ArgumentList "Package folder [Modules] '$ModulesPath' not found", 'Error'
     }
     
-    $RunbooksPath = Get-AatPackageFolderPath -Runbooks
+    $RunbooksPath = Get-AatPackageFolderPath -Runbooks -PackageName $PackageName
 
     if (-not (Test-Path -Path $RunbooksPath)) {
         $TestResults += New-Object -TypeName PackageTestResult -ArgumentList "Package folder [Runbooks] '$RunbooksPath' not found", 'Error'

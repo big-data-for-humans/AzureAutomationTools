@@ -889,9 +889,6 @@ function DeployModules {
                 Write-Output "Updating global module $($Module.Name) $($ExistingModule.Version) --> $($Module.Version)"
                 $AutomationModule = New-AzureRmAutomationModule -ContentLink $ContentLink @Params
             }
-            elseif ([string]::IsNullOrEmpty($ExistingModule.Version)) {
-                Write-Verbose "Fixing 
-            }
             elseif ($ExistingModule.Version -ne $Module.Version) {
                 Write-Output "Changing existing module: $($Module.Name) $($ExistingModule.Version) --> $($Module.Version)"
                 if ($Module.Version) {

@@ -94,8 +94,6 @@ function Export-AzureRmAutomationRunbookLog {
     }
 
     #endregion
-    
-    $LogPath = [System.IO.Path]::GetTempFileName()
 
     $KeySplat = @{
         ResourceGroupName = $ResourceGroupName

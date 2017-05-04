@@ -671,7 +671,7 @@ function Add-AatPackageModule {
             $ExistingObj = $ModuleObj | Where-Object Name -eq $_.Name
 
             if ($ExistingObj -and $_.Version -ne $ExistingObj.Version) {
-                $BadEntries += "[$($_.Name)](Expected: $ModuleObjVersion, Actual: $($_.Version))"
+                $BadEntries += "[$($_.Name)](Expected: $($ExistingObj.Version), Actual: $($_.Version))"
             }
             else {
                 Write-Verbose -Message "Duplicate entry of $($_.Name) : $($_.Version). Skipping."
@@ -680,7 +680,7 @@ function Add-AatPackageModule {
         }
 
         if ($BadEntries.Count -gt 0) {
-            throw "Module version descrepency found: $([string]::join('; ', $BadEntries)). Please remove these modules from the modules file."
+            throw "Module version descrepency found: $([string]::join('; ', $BadEntries)). Please remove these modules from the modules file and try again."
         }  
         else {
             $ModuleObj = $ModuleObj | Where-Object Name -NotIn $GoodEntries
@@ -888,15 +888,12 @@ function DeployModules {
             
         foreach ($Module in $Modules) {
             $ContentLink = $Module.Package
-            $Params = @{Name = $Module.Name; }
+            $Params = @{Name = $Module.Name;}
             $Params += $CommonParameters
+            $AutomationModule = $null
             
-            $ModuleQuery = @{
-                Name = $Module.Name
-            }
-            $ModuleQuery += $CommonParameters
             try {
-                $ExistingModule = Get-AzureRmAutomationModule @ModuleQuery
+                $ExistingModule = Get-AzureRmAutomationModule @Params
             }
             catch [Microsoft.Azure.Commands.Automation.Common.ResourceNotFoundException] {
                 Write-Verbose "Cannot find module '$($Module.Name)' in automation account '$AutomationAccountName'."
@@ -913,38 +910,37 @@ function DeployModules {
             }
             elseif ($ExistingModule.Version -ne $Module.Version) {
                 Write-Output "Changing existing module: $($Module.Name) $($ExistingModule.Version) --> $($Module.Version)"
-                if ($Module.Version) {
-                    $Params['ContentLinkVersion'] = $Module.Version
-                }
-                $AutomationModule = Set-AzureRmAutomationModule -ContentLinkUri $ContentLink @Params
+                $AutomationModule = Set-AzureRmAutomationModule -ContentLinkUri $Module.Package -ContentLinkVersion $Module.Version @Params
             }
             else {
                 Write-Output "Module up to date: $($Module.Name) $($Module.Version)"
             }
 
-            $PollCount = 0
-            # Wait by default (for dependency purposes). TODO: Add this to the module config
-            while($PollCount -lt $MaxModulePoll -and 
-                $AutomationModule.ProvisioningState -ne 'Succeeded' -and
-                $AutomationModule.ProvisioningState -ne 'Failed') {
-                    $PollCount++
-                    Start-Sleep -Seconds 10
-                    Write-Verbose "Polling for $($Module.Name) completion..."
-                    $AutomationModule = $AutomationModule | Get-AzureRmAutomationModule
-            }
+            if ($null -ne $AutomationModule) {
+                $PollCount = 0
+                # Wait by default (for dependency purposes). TODO: Add this to the module config
+                while($PollCount -lt $MaxModulePoll -and 
+                    $AutomationModule.ProvisioningState -ne 'Succeeded' -and
+                    $AutomationModule.ProvisioningState -ne 'Failed') {
+                        $PollCount++
+                        Start-Sleep -Seconds 10
+                        Write-Verbose "Polling for $($Module.Name) completion..."
+                        $AutomationModule = $AutomationModule | Get-AzureRmAutomationModule
+                }
 
-            if ($PollCount -eq $MaxModulePoll -and 
-                $AutomationModule.ProvisioningState -ne 'Succeeded' -and
-                $AutomationModule.ProvisioningState -ne 'Failed') {
-                Write-Error -Message "Failed to upload module: $($Module.Name) - PollCount reached max limit."
-                continue
-            }
+                if ($PollCount -eq $MaxModulePoll -and 
+                    $AutomationModule.ProvisioningState -ne 'Succeeded' -and
+                    $AutomationModule.ProvisioningState -ne 'Failed') {
+                    Write-Error -Message "Failed to upload module: $($Module.Name) - PollCount reached max limit."
+                    continue
+                }
 
-            if ($AutomationModule.ProvisioningState -eq 'Failed') {
-                Write-Error -Message "Failed to upload module: $($Module.Name) - ProvisioningState Failed"
-                continue
+                if ($AutomationModule.ProvisioningState -eq 'Failed') {
+                    Write-Error -Message "Failed to upload module: $($Module.Name) - ProvisioningState Failed"
+                    continue
+                }
             }
-
+            
             Write-Output "Completed upload of $($Module.Name)"
         }
     }
@@ -1140,7 +1136,7 @@ function GetModuleBlob {
                     Version = $Version
                     Package = $ModuleContentUrl
                 }
-                Write-Verbose -Message "Inserting into FinalList: @{Name=$Name; Version=$Version; Package=$Package}"
+                Write-Verbose -Message "Inserting into FinalList: @{Name=$Name; Version=$Version; Package=$ModuleContentUrl}"
                 $FinalList.Insert(0, $Entry)
             }
 
@@ -1171,6 +1167,10 @@ function GetModuleBlob {
 
                         if ($CurrentEntry) {
                             Write-Verbose "Entry $DependencyName[$dependencyVersion] already exists in the list. Skipping"
+                            # Push the entry above this module to make sure dependencies are installed first
+                            # Out-Null to stop the boolean entering pipeline and PowerShell casting to an object[] (that was fun to debug!)
+                            $FinalList.Remove($CurrentEntry) | Out-Null 
+                            $FinalList.Insert(0, $CurrentEntry)
                             continue
                         }
 
@@ -1180,7 +1180,7 @@ function GetModuleBlob {
             }   
         }
 
-        return $FinalList
+        $FinalList
     }
 }
 
@@ -1201,7 +1201,6 @@ function GetModuleInfo
         [string]
         $Version
     )
-
 
     Write-Verbose "Gathering information about module '$Name' : '$Version'"
 

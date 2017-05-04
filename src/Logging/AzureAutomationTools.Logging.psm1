@@ -60,7 +60,7 @@ function Export-AzureRmAutomationRunbookLog {
 
     #region Helper functions
 
-    function TestRunbookInclusion{
+    function TestRunbookInclusion {
         param (
             [Parameter(Mandatory = $true)]
             [string]
@@ -121,8 +121,8 @@ function Export-AzureRmAutomationRunbookLog {
     $StorageAccountKey = (Get-AzureRmStorageAccountKey @KeySplat).Key1
     if (-not $StorageAccountKey) {
         $StorageAccountKey = (Get-AzureRmStorageAccountKey @KeySplat) |
-                                    Where-Object KeyName -eq 'Key1' |
-                                    Select-Object -ExpandProperty 'Value'
+            Where-Object KeyName -eq 'Key1' |
+            Select-Object -ExpandProperty 'Value'
     }
 
     $ContextSplat = @{
@@ -136,11 +136,11 @@ function Export-AzureRmAutomationRunbookLog {
     Write-Output "Collecting jobs data..."
     $Jobs = Get-AzureRmAutomationJob -ResourceGroupName $ResourceGroupName -AutomationAccountName $AutomationAccountName |
         Where-Object {
-            $_.Status -In @('Completed', 'Failed', 'Stopped') -and
-            $_.EndTime.UtcDateTime -ge $CollectLogsFrom -and
-            $_.EndTime.UtcDateTime -le $CollectLogsTo -and
-            (TestRunbookInclusion -RunbookName $_.RunbookName)
-        } -ErrorAction Stop | Get-AzureRmAutomationJob | Sort-Object -Property EndTime
+        $_.Status -In @('Completed', 'Failed', 'Stopped') -and 
+        $_.EndTime.UtcDateTime -ge $CollectLogsFrom -and 
+        $_.EndTime.UtcDateTime -le $CollectLogsTo -and 
+        (TestRunbookInclusion -RunbookName $_.RunbookName)
+    } -ErrorAction Stop | Get-AzureRmAutomationJob | Sort-Object -Property EndTime
             
     Write-Output "Collecting jobs data... Done."
 
@@ -158,9 +158,9 @@ function Export-AzureRmAutomationRunbookLog {
         Write-Verbose "Capturing:@{ Name = $($Job.RunbookName); Start = $($Job.CreationTime.UtcDateTime.ToString('s')) }"
         $JobName = $Job.RunbookName
         $CreateDate = $job.CreationTime.UtcDateTime
-        $Year =  $CreateDate.Year
+        $Year = $CreateDate.Year
         $Month = [string]::Format('{0:00}', $CreateDate.Month)
-        $Day =   [string]::Format('{0:00}', $CreateDate.Day)
+        $Day = [string]::Format('{0:00}', $CreateDate.Day)
         $JobBlobPath = "$ResourceGroupName/$AutomationAccountName/$JobName/$Year/$Month/$Day/$($Job.JobId).json"
 
         try {
@@ -198,7 +198,7 @@ function Export-AzureRmAutomationRunbookLog {
                 }
                 $Record = Get-AzureRmAutomationJobOutputRecord @RecordParams
                 
-            $StreamOutput += @{
+                $StreamOutput += @{
                     StreamRecordId = $Record.StreamRecordId
                     Time = $Record.Time
                     Value = $Record.Value

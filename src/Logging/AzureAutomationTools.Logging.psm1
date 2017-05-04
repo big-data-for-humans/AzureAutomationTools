@@ -99,11 +99,14 @@ function Export-AzureRmAutomationRunbookLog {
         ResourceGroupName = $ResourceGroupName
         Name = $StorageAccountName
     }
-    $StorageAccountKey = (Get-AzureRmStorageAccountKey @KeySplat).Key1
-    if (-not $StorageAccountKey) {
-        $StorageAccountKey = (Get-AzureRmStorageAccountKey @KeySplat) |
+    $StorageAccountKeyObj = (Get-AzureRmStorageAccountKey @KeySplat)
+    if ($StorageAccountKeyObj -is [System.Collections.IList]) {
+        $StorageAccountKey = $StorageAccountKeyObj |
             Where-Object KeyName -eq 'Key1' |
             Select-Object -ExpandProperty 'Value'
+    }
+    else {
+        $StorageAccountKey = $StorageAccountKeyObj.Key1
     }
 
     $ContextSplat = @{

@@ -1,11 +1,5 @@
-<#
-.Synopsis
-   Formats Azure Automation Runbook logs as JSON and exports to a storage account
-.DESCRIPTION
-   Formats Azure Automation Runbook logs as JSON and exports to a storage account
-.EXAMPLE
-   TODO
-#>
+Set-StrictMode -Version latest
+
 function Export-AzureRmAutomationRunbookLog {
     param (
         # Target ResourceGroupName of the AutomationAccount
@@ -165,8 +159,7 @@ function Export-AzureRmAutomationRunbookLog {
 
         try {
             $CurrentEntry = Get-AzureStorageBlob -Blob $JobBlobPath -Container $StorageContainerName -Context $StorageContext -ErrorAction Stop
-            Write-Warning "Blob '$($JobBlobPath)' already exists in '$($StorageAccountName)/$($StorageContainerName)'. Skipping import."
-            continue
+            throw "Blob '$($JobBlobPath)' already exists in '$($StorageAccountName)/$($StorageContainerName)'."
         }
         catch [Microsoft.WindowsAzure.Commands.Storage.Common.ResourceNotFoundException] {
             Write-Verbose "No entry found for Blob '$($JobBlobPath)'. Continuing with import."

@@ -94,14 +94,7 @@ function Export-AzureRmAutomationRunbookLog {
     }
 
     #endregion
-
-    try {
-        Get-AzureRmContext | Out-Null
-    }
-    catch [System.Management.Automation.PSInvalidOperationException] {
-        Login-AzureRmAccount -EnvironmentName $EnvironmentName
-    }
-
+    
     $LogPath = [System.IO.Path]::GetTempFileName()
 
     $KeySplat = @{

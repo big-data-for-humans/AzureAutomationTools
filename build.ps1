@@ -58,7 +58,7 @@ foreach ($Package in $Packages) {
     Copy-Item -Path $SourceFolder\* -Destination $OutputFolder -Recurse
 
     # Test the import on a new PowerShell session
-    $Ps = [scriptblock]::Create("Import-Module -Name $($Psd1Path.FullName)").GetPowerShell()
+    $Ps = [scriptblock]::Create("Import-Module -Name '$($Psd1Path.FullName)'").GetPowerShell()
     $Ps.Invoke()
 
     if ($Ps.HadErrors) {

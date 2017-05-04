@@ -36,11 +36,6 @@ function Export-AzureRmAutomationRunbookLog {
         [string[]]
         $ExcludeRunbook = $null,
 
-        # Optional Azure EnvironmentName to run this on. Storage account and automation account both need to be in this environment! 
-        [Parameter()]
-        [string]
-        $EnvironmentName = 'AzureCloud',
-
         # Collect logs completed after this datetime
         [Parameter()]
         [datetime]
@@ -171,7 +166,6 @@ function Export-AzureRmAutomationRunbookLog {
         foreach ($Stream in @('Output', 'Warning', 'Error')) {
             $StreamData = Get-AzureRmAutomationJobOutput @Params -Stream $Stream
             $StreamOutput = @()
-            Write-Verbose "Captured stream data. Count $($StreamData.Count)"
             foreach ($Entry in $StreamData) {
                 $RecordParams = @{
                     Id = $Entry.StreamRecordId
@@ -190,7 +184,6 @@ function Export-AzureRmAutomationRunbookLog {
                 Write-Verbose "Captured record $($Entry.StreamRecordId)."
             }
             $Streams[$Stream] = $StreamOutput
-            Write-Verbose "Captured stream data. Count $($StreamData.Count)... Done."
         }
 
         $LogObjParams['Streams'] = $Streams

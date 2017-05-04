@@ -1068,7 +1068,7 @@ function GetModuleBlob {
         [string]
         $Version,
 
-        # @{ModuleName=<Name>; ModuleVersion=<Version>}
+        # @{Name=<Name>; Version=<Version>; Package=<Package>;}
         [Parameter(Mandatory = $true,
                     ParameterSetName = 'ByModuleList')]
         [hashtable[]]

@@ -36,11 +36,6 @@ function Export-AzureRmAutomationRunbookLog {
         [string[]]
         $ExcludeRunbook = $null,
 
-        # Optional Azure EnvironmentName to run this on. Storage account and automation account both need to be in this environment! 
-        [Parameter()]
-        [string]
-        $EnvironmentName = 'AzureCloud',
-
         # Collect logs completed after this datetime
         [Parameter()]
         [datetime]

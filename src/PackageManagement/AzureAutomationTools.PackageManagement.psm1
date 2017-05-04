@@ -592,11 +592,11 @@ function New-AatModulesFile {
     }
 }
 
-function New-AatPackageModule {
-    [CmdletBinding(PositionalBinding = $false,
-                    DefaultParameterSetName = 'WithoutPackage')]
+function Add-AatPackageModule {
+    [CmdletBinding(DefaultParameterSetName = 'WithoutPackage')]
     param (
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true,
+                    Position = 1)]
         [Parameter(ParameterSetName = 'WithoutPackage')]
         [Parameter(ParameterSetName = 'WithPackage')]
         [string]
@@ -613,7 +613,8 @@ function New-AatPackageModule {
         [string]
         $Package,
 
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true,
+                    Position = 2)]
         [Parameter(ParameterSetName = 'WithoutPackage')]
         [Parameter(ParameterSetName = 'WithPackage')]
         [string]
@@ -630,26 +631,28 @@ function New-AatPackageModule {
 
     if($PSCmdlet.ParameterSetName -eq 'WithoutPackage') {
         $ModuleObj = GetModuleBlob -ModuleList @{Name=$Name;Version=$Version}
-    }
-    else{
-        $ModuleObj = [pscustomobject]@{
+    } 
+    else {
+        $ModuleObj = @{
             Name = $Name
             Version = $Version
             Package = $Package
         }
     }
 
-    $CurrentEntries = $ModuleFileObj | Where-Object {$_.Name -in $ModuleObj.Name}
+    $Names = $ModuleObj | ForEach-Object {$_.Name}
+    $CurrentEntries = $ModuleFileObj | Where-Object {$_.Name -in $Names}
     if ($CurrentEntries) {
         $BadEntries = @()
         $GoodEntries = @()
         $CurrentEntries | ForEach-Object {
-            $ModuleObjVersion = $ModuleObj | Where-Object Name -eq $_.Name | Select-Object -ExpandProperty Version
+            $ExistingObj = $ModuleObj | Where-Object Name -eq $_.Name
 
-            if ($_.Version -ne $ModuleObjVersion) {
+            if ($ExistingObj -and $_.Version -ne $ExistingObj.Version) {
                 $BadEntries += "[$($_.Name)](Expected: $ModuleObjVersion, Actual: $($_.Version))"
             }
             else {
+                Write-Verbose -Message "Duplicate entry of $($_.Name) : $($_.Version). Skipping."
                 $GoodEntries += $_.Name
             }
         }
@@ -870,37 +873,34 @@ function DeployModules {
                 Name = $Module.Name
             }
             $ModuleQuery += $CommonParameters
-            $ExistingModule = Get-AzureRmAutomationModule @ModuleQuery
+            try {
+                $ExistingModule = Get-AzureRmAutomationModule @ModuleQuery
+            }
+            catch [Microsoft.Azure.Commands.Automation.Common.ResourceNotFoundException] {
+                Write-Verbose "Cannot find module '$($Module.Name)' in automation account '$AutomationAccountName'."
+                $ExistingModule = $null
+            }
 
             if ($null -eq $ExistingModule) {
                 Write-Output "Adding new module: $($Module.Name) $($Module.Version)"
-                New-AzureRmAutomationModule -ContentLink $ContentLink @Params
+                $AutomationModule = New-AzureRmAutomationModule -ContentLink $ContentLink @Params
+            }
+            elseif ($ExistingModule.IsGlobal) {
+                Write-Output "Updating global module $($Module.Name) $($ExistingModule.Version) --> $($Module.Version)"
+                $AutomationModule = New-AzureRmAutomationModule -ContentLink $ContentLink @Params
+            }
+            elseif ([string]::IsNullOrEmpty($ExistingModule.Version)) {
+                Write-Verbose "Fixing 
             }
             elseif ($ExistingModule.Version -ne $Module.Version) {
                 Write-Output "Changing existing module: $($Module.Name) $($ExistingModule.Version) --> $($Module.Version)"
-                Set-AzureRmAutomationModule -ContentLinkUri $ContentLink @Params
+                if ($Module.Version) {
+                    $Params['ContentLinkVersion'] = $Module.Version
+                }
+                $AutomationModule = Set-AzureRmAutomationModule -ContentLinkUri $ContentLink @Params
             }
             else {
                 Write-Output "Module up to date: $($Module.Name) $($Module.Version)"
-            }
-
-            #FIX failing - version property is coming back blank
-            if ($ExistingModules.Where( {$_.Name -eq $Module.Name -and $_.Version -eq $Module.Version})) {
-                Write-Output "Existing module up to date - skipping."
-            }
-            elseif ($ExistingModules.Where( {$_.Name -eq $Module.Name })) {           
-                Write-Output "Updating existing module ..."
-            
-                $AutomationModule = Set-AzureRmAutomationModule -ContentLinkUri $ContentLink  @Params
-            
-                Write-Output "Updating existing module - done."
-            }
-            else {
-                Write-Output "Adding new module ..."
-            
-                $AutomationModule = New-AzureRmAutomationModule -ContentLink $ContentLink @Params
-
-                Write-Output "Adding new module - done."
             }
 
             $PollCount = 0
@@ -926,7 +926,7 @@ function DeployModules {
                 continue
             }
 
-            Write-Output -Message "Completed upload of $($Module.Name)"
+            Write-Output "Completed upload of $($Module.Name)"
         }
     }
 }
@@ -1038,10 +1038,9 @@ function Publish-AatAutomationPackage {
     }
 }
 
-function GetModuleBlob
-{
+function GetModuleBlob {
     [CmdletBinding(DefaultParameterSetName = 'ByName')]
-    [OutputType([pscustomobject[]])]
+    [OutputType([hashtable[]])]
     param (
         [Parameter(Mandatory = $true,
                     ParameterSetName = 'ByName')]
@@ -1066,14 +1065,14 @@ function GetModuleBlob
         $IgnoreDependencies,
 
         [Parameter()]
-        [System.Collections.Generic.List[pscustomobject]]
+        [System.Collections.Generic.List[hashtable]]
         $FinalList
     )
 
     begin {
         if ($null -eq $FinalList) {
             Write-Verbose "Creating FinalList"
-            $FinalList = [System.Collections.Generic.List[PSCustomObject]]::new()
+            $FinalList = [System.Collections.Generic.List[hashtable]]::new()
         }
 
         if ($PsCmdlet.ParameterSetName -eq 'ByName') {
@@ -1117,16 +1116,17 @@ function GetModuleBlob
                     $ModuleContentUrl = (Invoke-WebRequest -Uri $ModuleContentUrl -MaximumRedirection 0 -UseBasicParsing -ErrorAction Ignore).Headers.Location 
                 } while(!$ModuleContentUrl.Contains(".nupkg"))
                 
-                $Entry = [pscustomobject]@{
+                $Entry = @{
                     Name = $Name
                     Version = $Version
                     Package = $ModuleContentUrl
                 }
+                Write-Verbose -Message "Inserting into FinalList: @{Name=$Name; Version=$Version; Package=$Package}"
                 $FinalList.Insert(0, $Entry)
             }
 
             if (-not $IgnoreDependencies.IsPresent) {
-                $Dependencies = [pscustomobject]$info.properties.Dependencies
+                $Dependencies = $info.properties.Dependencies
 
                 if($Dependencies -and $dependencies.Length -gt 0) {
                     $Dependencies = $dependencies.Split("|")
@@ -1161,7 +1161,7 @@ function GetModuleBlob
             }   
         }
 
-        return $FinalList.ToArray()
+        return $FinalList
     }
 }
 

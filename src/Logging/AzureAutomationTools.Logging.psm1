@@ -52,6 +52,8 @@ function Export-AzureRmAutomationRunbookLog {
         $CollectLogsTo = [datetime]::MaxValue
     )
 
+    $ErrorActionPreference = 'Stop'
+
     #region Helper functions
 
     function TestRunbookInclusion {
@@ -100,12 +102,6 @@ function Export-AzureRmAutomationRunbookLog {
         Login-AzureRmAccount -EnvironmentName $EnvironmentName
     }
 
-    #region Azure checks
-
-
-
-    #endregion
-
     $LogPath = [System.IO.Path]::GetTempFileName()
 
     $KeySplat = @{
@@ -123,8 +119,8 @@ function Export-AzureRmAutomationRunbookLog {
         StorageAccountName = $StorageAccountName
         StorageAccountKey = $StorageAccountKey
     }
-    $StorageContext = New-AzureStorageContext @ContextSplat -ErrorAction Stop
-    $Container = Get-AzureStorageContainer -Name $StorageContainerName -Context $StorageContext -ErrorAction Stop
+    $StorageContext = New-AzureStorageContext @ContextSplat
+    $Container = Get-AzureStorageContainer -Name $StorageContainerName -Context $StorageContext
 
 
     Write-Output "Collecting jobs data..."
@@ -134,7 +130,7 @@ function Export-AzureRmAutomationRunbookLog {
         $_.EndTime.UtcDateTime -ge $CollectLogsFrom -and 
         $_.EndTime.UtcDateTime -le $CollectLogsTo -and 
         (TestRunbookInclusion -RunbookName $_.RunbookName)
-    } -ErrorAction Stop | Get-AzureRmAutomationJob | Sort-Object -Property EndTime
+    } | Get-AzureRmAutomationJob | Sort-Object -Property EndTime
             
     Write-Output "Collecting jobs data... Done."
 
@@ -158,7 +154,7 @@ function Export-AzureRmAutomationRunbookLog {
         $JobBlobPath = "$ResourceGroupName/$AutomationAccountName/$JobName/$Year/$Month/$Day/$($Job.JobId).json"
 
         try {
-            $CurrentEntry = Get-AzureStorageBlob -Blob $JobBlobPath -Container $StorageContainerName -Context $StorageContext -ErrorAction Stop
+            $CurrentEntry = Get-AzureStorageBlob -Blob $JobBlobPath -Container $StorageContainerName -Context $StorageContext
             throw "Blob '$($JobBlobPath)' already exists in '$($StorageAccountName)/$($StorageContainerName)'."
         }
         catch [Microsoft.WindowsAzure.Commands.Storage.Common.ResourceNotFoundException] {
@@ -207,7 +203,7 @@ function Export-AzureRmAutomationRunbookLog {
         $LogPath = [System.IO.Path]::GetTempFileName()
         $LogObjParams | ConvertTo-Json -Depth 100 | Set-Content -Path $LogPath -Force
 
-        Set-AzureStorageBlobContent -File $LogPath -Container $StorageContainerName -Blob $JobBlobPath -Context $StorageContext -ErrorAction Stop | Out-Null
+        Set-AzureStorageBlobContent -File $LogPath -Container $StorageContainerName -Blob $JobBlobPath -Context $StorageContext | Out-Null
         Write-Output "Successfully uploaded log: '$JobBlobPath'"
         Remove-Item -Path $LogPath -Force
     }

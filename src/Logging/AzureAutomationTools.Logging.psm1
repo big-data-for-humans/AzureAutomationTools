@@ -137,8 +137,8 @@ function Export-AzureRmAutomationRunbookLog {
     $Jobs = Get-AzureRmAutomationJob -ResourceGroupName $ResourceGroupName -AutomationAccountName $AutomationAccountName |
         Where-Object {
             $_.Status -In @('Completed', 'Failed', 'Stopped') -and
-            $_.EndTime.UtcDateTime -gt $CollectLogsFrom -and
-            $_.EndTime.UtcDateTime -lt $CollectLogsTo -and
+            $_.EndTime.UtcDateTime -ge $CollectLogsFrom -and
+            $_.EndTime.UtcDateTime -le $CollectLogsTo -and
             (TestRunbookInclusion -RunbookName $_.RunbookName)
         } -ErrorAction Stop | Get-AzureRmAutomationJob | Sort-Object -Property EndTime
             

@@ -1,6 +1,6 @@
 Set-StrictMode -Version latest
 
-function Export-AzureRmAutomationRunbookLog {
+function Export-AatAutomationRunbookLog {
     param (
         # Target ResourceGroupName of the AutomationAccount
         [Parameter(Mandatory = $true)]

@@ -580,7 +580,7 @@ function New-AatModulesFile {
         [ValidateNotNullOrEmpty()]
         [string]$Name,
 
-        [Parameter(Mandatory = $false)]
+        [Parameter()]
         [switch]$IncludeSamples,
 
         [Parameter()]
@@ -591,10 +591,12 @@ function New-AatModulesFile {
         $Content = [System.Collections.Generic.List[hashtable]]::new()
 
         if ($IncludeSamples.IsPresent) {
+            Write-Output "`n`tAzureRm.Profile has been added to the example using the `"Add-AatPackageModule -Name 'AzureRM.Profile' -Version '2.7.0'`" cmdlet." | Out-Default
             $Content += @(
                 [ordered]@{
-                    Name = 'AzureRm.Storage'
+                    Name = 'AzureRm.Profile'
                     Version = '2.7.0'
+                    Package = 'https://devopsgallerystorage.blob.core.windows.net/packages/azurerm.profile.2.7.0.nupkg'
                 },
                 [ordered]@{
                     Name = 'CustomPackage'

@@ -667,6 +667,10 @@ function Add-AatPackageModule {
         return $ParamDictionary
     }
 
+    begin {
+        $ModuleFileName = $PSBoundParameters.ModuleFile
+    }
+
     end {
         if ($ModuleFileName -notmatch "^*/.json$") {
             $ModuleFileName += '.json'

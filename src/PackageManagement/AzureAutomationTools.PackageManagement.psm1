@@ -620,76 +620,100 @@ function Add-AatPackageModule {
     [CmdletBinding(DefaultParameterSetName = 'WithoutPackage')]
     param (
         [Parameter(Mandatory = $true,
-                    Position = 1)]
+                    Position = 2)]
         [Parameter(ParameterSetName = 'WithoutPackage')]
         [Parameter(ParameterSetName = 'WithPackage')]
         [string]
         $Name,
 
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $false,
+                    Position = 3)]
         [Parameter(ParameterSetName = 'WithoutPackage')]
         [Parameter(ParameterSetName = 'WithPackage')]
         [string]
         $Version,
 
         [Parameter(Mandatory = $true,
+                    Position = 4,
                     ParameterSetName = 'WithPackage')]
         [string]
-        $Package,
-
-        [Parameter(Mandatory = $true,
-                    Position = 2)]
-        [Parameter(ParameterSetName = 'WithoutPackage')]
-        [Parameter(ParameterSetName = 'WithPackage')]
-        [string]
-        $ModuleFileName
+        $Package
     )
 
-    if ($ModuleFileName -notmatch "^*/.json$") {
-        $ModuleFileName += '.json'
+    dynamicparam{
+        #create a new ParameterAttribute Object
+        $ModuleFileAttribute = New-Object System.Management.Automation.ParameterAttribute
+        $ModuleFileAttribute.Position = 1
+        $ModuleFileAttribute.Mandatory = $true
+        $ModuleFileAttribute.HelpMessage = "Name of the module file to add the module to"
+
+        $ValidateSetAttribute = New-Object -TypeName System.Management.Automation.ValidateSetAttribute -ArgumentList (
+            Get-ChildItem -Path (Get-AatPackageFolderPath -Modules) -Filter '*.json' | %{$_.Name -replace '.json', ''}
+        )
+
+        #create an Attributecollection object for the attribute we just created.
+        $AttributeCollection = New-Object -TypeName System.Collections.ObjectModel.Collection[System.Attribute]
+
+        #add our custom attribute
+        $AttributeCollection.Add($ModuleFileAttribute)
+        $AttributeCollection.Add($ValidateSetAttribute)
+
+        #add our paramater specifying the attribute collection
+        $ModuleFileParam = New-Object System.Management.Automation.RuntimeDefinedParameter('ModuleFile', [string], $AttributeCollection)
+
+        #expose the name of our parameter
+        $ParamDictionary = New-Object System.Management.Automation.RuntimeDefinedParameterDictionary
+        $ParamDictionary.Add('ModuleFile', $ModuleFileParam)
+        return $ParamDictionary
     }
 
-    $ModuleFilePath = Join-Path -Path (Get-AatPackageFolderPath -Modules) -ChildPath $ModuleFileName
-    $ModuleFileObj = Get-Content -Raw -Path $ModuleFilePath | 
-        ConvertFrom-Json
-
-    if($PSCmdlet.ParameterSetName -eq 'WithoutPackage') {
-        $ModuleObj = GetModuleBlob -ModuleList @{Name=$Name;Version=$Version}
-    } 
-    else {
-        $ModuleObj = @{
-            Name = $Name
-            Version = $Version
-            Package = $Package
-        }
-    }
-
-    $Names = $ModuleObj | ForEach-Object {$_.Name}
-    $CurrentEntries = $ModuleFileObj | Where-Object {$_.Name -in $Names}
-    if ($CurrentEntries) {
-        $BadEntries = @()
-        $GoodEntries = @()
-        $CurrentEntries | ForEach-Object {
-            $ExistingObj = $ModuleObj | Where-Object Name -eq $_.Name
-
-            if ($ExistingObj -and $_.Version -ne $ExistingObj.Version) {
-                $BadEntries += "[$($_.Name)](Expected: $($ExistingObj.Version), Actual: $($_.Version))"
-            }
-            else {
-                Write-Verbose -Message "Duplicate entry of $($_.Name) : $($_.Version). Skipping."
-                $GoodEntries += $_.Name
-            }
+    end {
+        if ($ModuleFileName -notmatch "^*/.json$") {
+            $ModuleFileName += '.json'
         }
 
-        if ($BadEntries.Count -gt 0) {
-            throw "Module version descrepency found: $([string]::join('; ', $BadEntries)). Please remove these modules from the modules file and try again."
-        }  
+        $ModuleFilePath = Join-Path -Path (Get-AatPackageFolderPath -Modules) -ChildPath $ModuleFileName
+        $ModuleFileObj = Get-Content -Raw -Path $ModuleFilePath | 
+            ConvertFrom-Json
+
+        if ($PSCmdlet.ParameterSetName -eq 'WithoutPackage') {
+            $ModuleObj = GetModuleBlob -ModuleList @{Name = $Name; Version = $Version}
+        } 
         else {
-            $ModuleObj = $ModuleObj | Where-Object Name -NotIn $GoodEntries
+            $ModuleObj = @{
+                Name = $Name
+                Version = $Version
+                Package = $Package
+            }
         }
-    }
 
-    $ModuleFileObj + $ModuleObj | ConvertTo-Json | Set-Content -Path $ModuleFilePath
+        $Names = $ModuleObj | ForEach-Object {$_.Name}
+        $CurrentEntries = $ModuleFileObj | Where-Object {$_.Name -in $Names}
+        if ($CurrentEntries) {
+            $BadEntries = @()
+            $GoodEntries = @()
+            $CurrentEntries | ForEach-Object {
+                $ExistingObj = $ModuleObj | Where-Object Name -eq $_.Name
+
+                if ($ExistingObj -and $_.Version -ne $ExistingObj.Version) {
+                    $BadEntries += "[$($_.Name)](Expected: $($ExistingObj.Version), Actual: $($_.Version))"
+                }
+                else {
+                    Write-Verbose -Message "Duplicate entry of $($_.Name) : $($_.Version). Skipping."
+                    $GoodEntries += $_.Name
+                }
+            }
+
+            if ($BadEntries.Count -gt 0) {
+                throw "Module version descrepency found: $([string]::join('; ', $BadEntries)). Please remove these modules from the modules file and try again."
+            }  
+            else {
+                $ModuleObj = $ModuleObj | Where-Object Name -NotIn $GoodEntries
+            }
+        }
+
+        $ModuleFileObj + $ModuleObj | ConvertTo-Json | Set-Content -Path $ModuleFilePath
+    }
 }
 
 function DeployRunbooks {

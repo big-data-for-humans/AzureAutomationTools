@@ -647,6 +647,8 @@ function Add-AatPackageModule {
         $ModuleFileAttribute.Mandatory = $true
         $ModuleFileAttribute.HelpMessage = "Name of the module file to add the module to"
 
+        $ValidateNotNullOrEmptyAttribute = New-Object System.Management.Automation.ValidateNotNullOrEmptyAttribute
+
         $ValidateSetAttribute = New-Object -TypeName System.Management.Automation.ValidateSetAttribute -ArgumentList (
             Get-ChildItem -Path (Get-AatPackageFolderPath -Modules) -Filter '*.json' | %{$_.Name -replace '.json', ''}
         )
@@ -657,6 +659,7 @@ function Add-AatPackageModule {
         #add our custom attribute
         $AttributeCollection.Add($ModuleFileAttribute)
         $AttributeCollection.Add($ValidateSetAttribute)
+        $AttributeCollection.Add($ValidateNotNullOrEmptyAttribute)
 
         #add our paramater specifying the attribute collection
         $ModuleFileParam = New-Object System.Management.Automation.RuntimeDefinedParameter('ModuleFile', [string], $AttributeCollection)

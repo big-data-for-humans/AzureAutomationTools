@@ -45,7 +45,7 @@ function Get-AatWorkingFolder {
 }
 
 function Set-AatWorkingFolder {
-    [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'Medium', PositionalBinding = $false)]
+    [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'Medium')]
     param (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
@@ -58,7 +58,7 @@ function Set-AatWorkingFolder {
 }
 
 function Get-AatWorkingPackage {
-    [CmdletBinding(PositionalBinding = $false)]
+    [CmdletBinding()]
     param()    
     
     $ret = $Script:WorkingPackage
@@ -72,10 +72,11 @@ function Get-AatWorkingPackage {
 }
 
 function Set-AatWorkingPackage {
-    [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'Medium', PositionalBinding = $false)]
+    [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'Medium')]
     param (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
+        [Alias('pn')]
         [string]$PackageName                
     )
 
@@ -89,23 +90,32 @@ function Set-AatWorkingPackage {
 }
 
 function Set-AatPackageOption {
-    [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'Medium', PositionalBinding = $false)]
+    [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'Medium')]
     param (
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
+        [Alias('afn')]
         [string]$AssetsFolderName,
+
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
+        [Alias('mfn')]
         [string]$ModulesFolderName,
+        
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
+        [Alias('rfn')]
         [string]$RunbooksFolderName,
+
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [string]$AssetsFileName,
+        
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
+        [Alias('jad')]
         [int]$JsonAssetDepth,
+        
         [Parameter(Mandatory = $false)]
         [ValidateSet('Unicode', 'UTF8')]
         [string]$Encoding        
@@ -145,15 +155,16 @@ function Set-AatPackageOption {
 
 function Get-AatPackageOption {
     [OutputType('System.Collections.HashTable')] 
-    [CmdletBinding(PositionalBinding = $false)]
+    [CmdletBinding()]
     param()    
     
     $Script:Options
 }
 
 function Get-AatPackagePath {
-    [CmdletBinding(PositionalBinding = $false)]
+    [CmdletBinding()]
     param(
+        [Alias('pn')]
         [string]$PackageName
     )    
     
@@ -168,18 +179,22 @@ function Get-AatPackagePath {
 }
 
 function Get-AatPackageFolderPath {    
-    [CmdletBinding(PositionalBinding = $false)]
+    [CmdletBinding()]
     param(
         [Parameter(Mandatory = $true, ParameterSetName = 'Assets')]
+        [Alias('a')]
         [switch]$Assets,
         
         [Parameter(Mandatory = $true, ParameterSetName = 'Modules')]
+        [Alias('m')]
         [switch]$Modules,
         
         [Parameter(Mandatory = $true, ParameterSetName = 'Runbooks')]
+        [Alias('rb')]
         [switch]$Runbooks,
 
         [ValidateNotNullOrEmpty()]
+        [Alias('pn')]
         [string]$PackageName
     )
 
@@ -213,12 +228,16 @@ function Get-AatPackageFolderPath {
 }
 
 function New-AatAutomationPackage {
-    [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'Medium', PositionalBinding = $false)]
+    [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'Medium')]
     param (        
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [string]$Name,        
+
+        [Alias('dcaf')]
         [Switch]$DontCreateAssetsFile,
+        
+        [Alias('is')]
         [Switch]$IncludeSamples
     )
     
@@ -281,11 +300,14 @@ function New-AatAutomationPackage {
 }
 
 function Test-AatAutomationPackage {
-    [CmdletBinding(PositionalBinding = $false)]
+    [CmdletBinding()]
     param(    
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
+        [Alias('pn')]
         [string]$PackageName,
+        
+        [Alias('iw')]
         [switch]$IgnoreWarnings
     )
 
@@ -431,19 +453,28 @@ function Test-AatAutomationPackage {
 }
 
 function New-AatAssetsFile {
-    [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'Medium', PositionalBinding = $false)]
+    [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'Medium')]
     param(
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [string]$Name,
+
         [Parameter(Mandatory = $false, ParameterSetName = 'ChooseAssets')]
+        [Alias('vars')]
         [switch]$IncludeVariables,
+        
         [Parameter(Mandatory = $false, ParameterSetName = 'ChooseAssets')]
+        [Alias('creds')]
         [switch]$IncludeCredentials,
+        
         [Parameter(Mandatory = $false, ParameterSetName = 'ChooseAssets')]
+        [Alias('certs')]
         [switch]$IncludeCertificates,
+        
         [Parameter(Mandatory = $false, ParameterSetName = 'ChooseAssets')]
+        [Alias('conns')]        
         [switch]$IncludeConnections,
+        
         [Parameter(Mandatory = $true, ParameterSetName = 'AllAssets')]
         [switch]$All
     )
@@ -486,16 +517,21 @@ function New-AatAssetsFile {
 }
 
 function New-AatPackageVariable {
-    [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'Low', PositionalBinding = $false)]    
+    [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'Low')]    
     param (
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
+        [ValidateNotNullOrEmpty()]        
         [string]$Name,
+
         [Parameter(Mandatory = $true, ParameterSetName = 'Plain')]
         [ValidateNotNullOrEmpty()]
+        
         [Object]$Value,
+        
         [Parameter(Mandatory = $true, ParameterSetName = 'Encrypted')]        
+        
         [switch]$IsEncrypted,
+        
         [switch]$AsJson
     )
     
@@ -517,16 +553,19 @@ function New-AatPackageVariable {
 }
 
 function Add-AatPackageVariable {
-    [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'Low', PositionalBinding = $false)]    
+    [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'Low')]    
     param (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [string]$Name,        
+        
         [Parameter(Mandatory = $true, ParameterSetName = 'Plain')]
         [ValidateNotNullOrEmpty()]
         [object]$Value,
+
         [Parameter(Mandatory = $true, ParameterSetName = 'Encrypted')]        
         [switch]$IsEncrypted,
+        
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [string]$AssetsFileName              
@@ -574,11 +613,12 @@ function Add-AatPackageVariable {
 }
 
 function DeployRunbooks {
-    [CmdletBinding(PositionalBinding = $false)]
+    [CmdletBinding()]
     param(
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [string]$Path,
+        
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [ValidatePattern('^.*\.ps1$')]        
@@ -624,11 +664,12 @@ function DeployRunbooks {
 }
 
 function DeployAssets {
-    [CmdletBinding(PositionalBinding = $false)]
+    [CmdletBinding()]
     param(
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [string]$Path,
+        
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [ValidatePattern('^.*\.json$')]        
@@ -737,7 +778,7 @@ function DeployAssets {
 }
 
 function DeployModules {
-    [CmdletBinding(PositionalBinding = $false)]
+    [CmdletBinding()]
     param(
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
@@ -793,36 +834,58 @@ function DeployModules {
 }
 
 function Publish-AatAutomationPackage {
-    [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'High', PositionalBinding = $false, DefaultParameterSetName = 'NamedPackages')]    
+    [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'High', DefaultParameterSetName = 'NamedPackages')]    
     param (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
+        [Alias('rg')]
         [string]$ResourceGroupName,
+        
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
+        [Alias('aa')]
         [string]$AutomationAccountName,
+        
         [Parameter(Mandatory = $false)]
+        [Alias('dr')]
         [Switch]$DeployRunbooks,    
+        
         [Parameter(Mandatory = $false)]
+        [Alias('dm')]
         [Switch]$DeployModules,
+        
         [Parameter(Mandatory = $false)]
+        [Alias('dv')]
         [Switch]$DeployVariables,
+
         [Parameter(Mandatory = $false)]
+        [Alias('dc')]
         [Switch]$DeployCredentials,
+
         [Parameter(Mandatory = $false)]
+        [Alias('nco')]
         [Switch]$NewCredentialsOnly,
+
         [Parameter(Mandatory = $false)]
         [int]$JsonAssetDepth = 4,
+        
         [Parameter(Mandatory = $false)]
         [ValidatePattern('^.+\.ps1$')]
+        [Alias('rf')]
         [string]$RunbookFilter = '*.ps1',
+        
         [Parameter(Mandatory = $false)]
         [ValidatePattern('^.+\.json$')]
+        [Alias('aff')]
         [string]$AssetsFileFilter = '*.json',
+        
         [Parameter(Mandatory = $false, ParameterSetName = 'NamedPackages')]
         [ValidateNotNullOrEmpty()]
+        [Alias('pn')]
         [string[]]$PackageName,
+        
         [Parameter(ParameterSetName = 'AllPackages')]
+        [Alias('All')]        
         [switch]$AllPackages
     )
     

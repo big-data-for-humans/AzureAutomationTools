@@ -865,9 +865,6 @@ function Publish-AatAutomationPackage {
         [Parameter(Mandatory = $false)]
         [Alias('nco')]
         [Switch]$NewCredentialsOnly,
-
-        [Parameter(Mandatory = $false)]
-        [int]$JsonAssetDepth = 4,
         
         [Parameter(Mandatory = $false)]
         [ValidatePattern('^.+\.ps1$')]

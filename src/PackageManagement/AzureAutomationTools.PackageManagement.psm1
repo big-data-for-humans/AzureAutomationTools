@@ -596,11 +596,11 @@ function New-AatModulesFile {
                 [ordered]@{
                     Name = 'AzureRm.Profile'
                     Version = '2.7.0'
-                    Package = 'https://devopsgallerystorage.blob.core.windows.net/packages/azurerm.profile.2.7.0.nupkg'
+                    ContentUri = 'https://devopsgallerystorage.blob.core.windows.net/packages/azurerm.profile.2.7.0.nupkg'
                 },
                 [ordered]@{
                     Name = 'AwesomeModule'
-                    Package = 'https://awesomestorageaccount.blob.core.windows.net/awesomecontainer/AwesomeModule.zip'
+                    ContentUri = 'https://awesomestorageaccount.blob.core.windows.net/awesomecontainer/AwesomeModule.zip'
                 }
             )
         }
@@ -617,27 +617,28 @@ function New-AatModulesFile {
 }
 
 function Add-AatPackageModule {
-    [CmdletBinding(DefaultParameterSetName = 'WithoutPackage')]
+    [CmdletBinding(DefaultParameterSetName = 'CustomModule')]
     param (
         [Parameter(Mandatory = $true,
                     Position = 2)]
-        [Parameter(ParameterSetName = 'WithoutPackage')]
-        [Parameter(ParameterSetName = 'WithPackage')]
+        [Parameter(ParameterSetName = 'CustomModule')]
+        [Parameter(ParameterSetName = 'PSGalleryModule')]
         [string]
         $Name,
 
         [Parameter(Mandatory = $false,
                     Position = 3)]
-        [Parameter(ParameterSetName = 'WithoutPackage')]
-        [Parameter(ParameterSetName = 'WithPackage')]
+        [Parameter(ParameterSetName = 'CustomModule')]
+        [Parameter(ParameterSetName = 'PSGalleryModule')]
         [string]
         $Version,
 
         [Parameter(Mandatory = $true,
                     Position = 4,
-                    ParameterSetName = 'WithPackage')]
+                    ParameterSetName = 'PSGalleryModule
+        ')]
         [string]
-        $Package
+        $ContentUri
     )
 
     dynamicparam{
@@ -681,14 +682,14 @@ function Add-AatPackageModule {
         $ModuleFileObj = Get-Content -Raw -Path $ModuleFilePath | 
             ConvertFrom-Json
 
-        if ($PSCmdlet.ParameterSetName -eq 'WithoutPackage') {
+        if ($PSCmdlet.ParameterSetName -eq 'CustomModule') {
             $ModuleObj = GetModuleBlob -ModuleList @{Name = $Name; Version = $Version}
         } 
         else {
             $ModuleObj = @{
                 Name = $Name
                 Version = $Version
-                Package = $Package
+                ContentUri = $ContentUri
             }
         }
 
@@ -923,7 +924,7 @@ function DeployModules {
         $ExistingModules = (Get-AzureRmAutomationModule @CommonParameters| Select-Object 'Name', 'Version');
             
         foreach ($Module in $Modules) {
-            $ContentLink = $Module.Package
+            $ContentLink = $Module.ContentUri
             $Params = @{Name = $Module.Name;}
             $Params += $CommonParameters
             $AutomationModule = $null
@@ -946,7 +947,7 @@ function DeployModules {
             }
             elseif ($ExistingModule.Version -ne $Module.Version) {
                 Write-Output "Changing existing module: $($Module.Name) $($ExistingModule.Version) --> $($Module.Version)"
-                $AutomationModule = Set-AzureRmAutomationModule -ContentLinkUri $Module.Package -ContentLinkVersion $Module.Version @Params
+                $AutomationModule = Set-AzureRmAutomationModule -ContentLinkUri $Module.ContentUri -ContentLinkVersion $Module.Version @Params
             }
             else {
                 Write-Output "Module up to date: $($Module.Name) $($Module.Version)"
@@ -1104,7 +1105,7 @@ function GetModuleBlob {
         [string]
         $Version,
 
-        # @{Name=<Name>; Version=<Version>; Package=<Package>;}
+        # @{Name=<Name>; Version=<Version>; ContentUri=<ContentUri>;}
         [Parameter(Mandatory = $true,
                     ParameterSetName = 'ByModuleList')]
         [hashtable[]]
@@ -1167,9 +1168,9 @@ function GetModuleBlob {
             $Entry = @{
                 Name = $Name
                 Version = $Version
-                Package = $ModuleContentUrl
+                ContentUri = $ModuleContentUrl
             }
-            Write-Verbose -Message "Inserting into FinalList: @{Name=$Name; Version=$Version; Package=$ModuleContentUrl}"
+            Write-Verbose -Message "Inserting into FinalList: @{Name=$Name; Version=$Version; ContentUri=$ModuleContentUrl}"
             $FinalList.Insert(0, $Entry)
         }
 

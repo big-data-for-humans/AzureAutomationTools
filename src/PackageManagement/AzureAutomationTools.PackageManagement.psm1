@@ -1090,6 +1090,8 @@ function Publish-AatAutomationPackage {
     }
 }
 
+# Based off the great work from jodoglevy, and the AzureAutomationTeam
+# https://www.powershellgallery.com/packages/Update-ModulesInAutomationToLatestVersion
 function GetModuleBlob {
     [CmdletBinding(DefaultParameterSetName = 'ByName')]
     [OutputType([hashtable[]])]
@@ -1217,6 +1219,8 @@ function GetModuleBlob {
     $FinalList
 }
 
+# Based off the great work from jodoglevy, and the AzureAutomationTeam
+# https://www.powershellgallery.com/packages/Update-ModulesInAutomationToLatestVersion
 function GetModuleInfo
 {
     [CmdletBinding()]

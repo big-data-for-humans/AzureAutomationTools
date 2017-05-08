@@ -1117,104 +1117,100 @@ function GetModuleBlob {
         $FinalList
     )
 
-    begin {
-        if ($null -eq $FinalList) {
-            Write-Verbose "Creating FinalList"
-            $FinalList = [System.Collections.Generic.List[hashtable]]::new()
-        }
+    if ($null -eq $FinalList) {
+        Write-Verbose "Creating FinalList"
+        $FinalList = [System.Collections.Generic.List[hashtable]]::new()
+    }
 
-        if ($PsCmdlet.ParameterSetName -eq 'ByName') {
-            $ModuleList += @{Name = $Name}
-            if (-not [string]::IsNullOrWhiteSpace($Version)) {
-                $ModuleList[0]['Version'] = $Version
-            }
+    if ($PsCmdlet.ParameterSetName -eq 'ByName') {
+        $ModuleList += @{Name = $Name}
+        if (-not [string]::IsNullOrWhiteSpace($Version)) {
+            $ModuleList[0]['Version'] = $Version
         }
     }
 
-    process {
-        foreach ($ModuleEntry in $ModuleList) {
-            $InfoSplat = @{Name = $ModuleEntry.Name}
-            if ($ModuleEntry['Version'] -and
-                -not [string]::IsNullOrWhiteSpace($ModuleEntry.Version)) {
-                $InfoSplat['Version'] = $ModuleEntry.Version
-            }
-            $Info = GetModuleInfo @infoSplat
-            if (-not $Info) {
-                continue
-            }
+    foreach ($ModuleEntry in $ModuleList) {
+        $InfoSplat = @{Name = $ModuleEntry.Name}
+        if ($ModuleEntry['Version'] -and
+            -not [string]::IsNullOrWhiteSpace($ModuleEntry.Version)) {
+            $InfoSplat['Version'] = $ModuleEntry.Version
+        }
+        $Info = GetModuleInfo @infoSplat
+        if (-not $Info) {
+            continue
+        }
 
-            $Name = $info.title.'#text'
-            $Version = $info.properties.version
+        $Name = $info.title.'#text'
+        $Version = $info.properties.version
 
-            if (-not $version) {
-                throw "Cannot resolve version of module '$Name'. Please check module name!"
-                continue
-            }
+        if (-not $version) {
+            throw "Cannot resolve version of module '$Name'. Please check module name!"
+            continue
+        }
+        
+        if ($FinalList.Where({$_.Name -eq $name -and $_.Version -eq $Version})) {
+            Write-Verbose "Module '$Name' is already in the FullList. Skipping addition"
+        }
+        else {
+            Write-Verbose "Adding '$Name' to FullList"
+            Write-Verbose "Resolving URL..."
+
+
+            $ModuleContentUrl = "https://www.powershellgallery.com/api/v2/package/$Name/$version"
+            do {
+                $ModuleContentUrl = (Invoke-WebRequest -Uri $ModuleContentUrl -MaximumRedirection 0 -UseBasicParsing -ErrorAction Ignore).Headers.Location 
+            } while(!$ModuleContentUrl.Contains(".nupkg"))
             
-            if ($FinalList.Where({$_.Name -eq $name -and $_.Version -eq $Version})) {
-                Write-Verbose "Module '$Name' is already in the FullList. Skipping addition"
+            $Entry = @{
+                Name = $Name
+                Version = $Version
+                Package = $ModuleContentUrl
             }
-            else {
-                Write-Verbose "Adding '$Name' to FullList"
-                Write-Verbose "Resolving URL..."
-
-
-                $ModuleContentUrl = "https://www.powershellgallery.com/api/v2/package/$Name/$version"
-                do {
-                    $ModuleContentUrl = (Invoke-WebRequest -Uri $ModuleContentUrl -MaximumRedirection 0 -UseBasicParsing -ErrorAction Ignore).Headers.Location 
-                } while(!$ModuleContentUrl.Contains(".nupkg"))
-                
-                $Entry = @{
-                    Name = $Name
-                    Version = $Version
-                    Package = $ModuleContentUrl
-                }
-                Write-Verbose -Message "Inserting into FinalList: @{Name=$Name; Version=$Version; Package=$ModuleContentUrl}"
-                $FinalList.Insert(0, $Entry)
-            }
-
-            if (-not $IgnoreDependencies.IsPresent) {
-                $Dependencies = $info.properties.Dependencies
-
-                if($Dependencies -and $dependencies.Length -gt 0) {
-                    $Dependencies = $dependencies.Split("|")
-                
-                    $DependencyNames = @()
-                    foreach ($Dependency in $Dependencies) {
-                        if (-not $Dependency -and $Dependency.Length -gt 0) {
-                            continue
-                        }
-
-                        $split = $Dependency.Split(':')
-                        $DependencyName = $split[0]
-                        $DependencyVersion = $split[1] -replace '\[', '' -replace '\]', ''
-
-                        if (-not $DependencyName) {
-                            Write-Verbose 'Dependency has no name. Skipping.'
-                            continue
-                        }
-                    
-                        $CurrentEntry = $FinalList | Where-Object -FilterScript {
-                            $_.Name -eq $DependencyName -and $_.Version -eq $DependencyVersion
-                        }
-
-                        if ($CurrentEntry) {
-                            Write-Verbose "Entry $DependencyName[$dependencyVersion] already exists in the list. Skipping"
-                            # Push the entry above this module to make sure dependencies are installed first
-                            # Out-Null to stop the boolean entering pipeline and PowerShell casting to an object[] (that was fun to debug!)
-                            $FinalList.Remove($CurrentEntry) | Out-Null 
-                            $FinalList.Insert(0, $CurrentEntry)
-                            continue
-                        }
-
-                        $FinalList = GetModuleBlob -ModuleList @{Name=$dependencyName; Version=$dependencyVersion} -FinalList $FinalList
-                    }
-                }
-            }   
+            Write-Verbose -Message "Inserting into FinalList: @{Name=$Name; Version=$Version; Package=$ModuleContentUrl}"
+            $FinalList.Insert(0, $Entry)
         }
 
-        $FinalList
+        if (-not $IgnoreDependencies.IsPresent) {
+            $Dependencies = $info.properties.Dependencies
+
+            if($Dependencies -and $dependencies.Length -gt 0) {
+                $Dependencies = $dependencies.Split("|")
+            
+                $DependencyNames = @()
+                foreach ($Dependency in $Dependencies) {
+                    if (-not $Dependency -and $Dependency.Length -gt 0) {
+                        continue
+                    }
+
+                    $split = $Dependency.Split(':')
+                    $DependencyName = $split[0]
+                    $DependencyVersion = $split[1] -replace '\[', '' -replace '\]', ''
+
+                    if (-not $DependencyName) {
+                        Write-Verbose 'Dependency has no name. Skipping.'
+                        continue
+                    }
+                
+                    $CurrentEntry = $FinalList | Where-Object -FilterScript {
+                        $_.Name -eq $DependencyName -and $_.Version -eq $DependencyVersion
+                    }
+
+                    if ($CurrentEntry) {
+                        Write-Verbose "Entry $DependencyName[$dependencyVersion] already exists in the list. Skipping"
+                        # Push the entry above this module to make sure dependencies are installed first
+                        # Out-Null to stop the boolean entering pipeline and PowerShell casting to an object[] (that was fun to debug!)
+                        $FinalList.Remove($CurrentEntry) | Out-Null 
+                        $FinalList.Insert(0, $CurrentEntry)
+                        continue
+                    }
+
+                    $FinalList = GetModuleBlob -ModuleList @{Name=$dependencyName; Version=$dependencyVersion} -FinalList $FinalList
+                }
+            }
+        }   
     }
+
+    $FinalList
 }
 
 function GetModuleInfo

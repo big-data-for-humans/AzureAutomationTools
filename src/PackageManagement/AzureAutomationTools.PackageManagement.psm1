@@ -651,7 +651,7 @@ function Add-AatPackageModule {
         $ValidateNotNullOrEmptyAttribute = New-Object System.Management.Automation.ValidateNotNullOrEmptyAttribute
 
         $ValidateSetAttribute = New-Object -TypeName System.Management.Automation.ValidateSetAttribute -ArgumentList (
-            Get-ChildItem -Path (Get-AatPackageFolderPath -Modules) -Filter '*.json' | %{$_.Name -replace '.json', ''}
+            Get-ChildItem -Path (Get-AatPackageFolderPath -Modules) -Filter '*.json' | ForEach-Object{$_.Name -replace '.json', ''}
         )
 
         #create an Attributecollection object for the attribute we just created.
@@ -1269,6 +1269,6 @@ function GetModuleInfo
     else {
         $ModuleName = $SearchResult.title.'#text' # get correct casing for the module name
         # Output to pipeline
-        Invoke-RestMethod -Method Get -UseBasicParsing -Uri $SearchResult.id | Select -ExpandProperty entry
+        Invoke-RestMethod -Method Get -UseBasicParsing -Uri $SearchResult.id | Select-Object -ExpandProperty entry
     }
 }

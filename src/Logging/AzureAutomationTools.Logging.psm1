@@ -112,7 +112,7 @@ function Export-AatAutomationRunbookLog {
     $Container = Get-AzureStorageContainer -Name $StorageContainerName -Context $StorageContext
 
 
-    Write-Output "Collecting jobs data..."
+    Write-Verbose "Collecting jobs data..."
     $Jobs = Get-AzureRmAutomationJob -ResourceGroupName $ResourceGroupName -AutomationAccountName $AutomationAccountName |
         Where-Object {
         $_.Status -In @('Completed', 'Failed', 'Stopped') -and 
@@ -121,15 +121,15 @@ function Export-AatAutomationRunbookLog {
         (TestRunbookInclusion -RunbookName $_.RunbookName)
     } | Get-AzureRmAutomationJob | Sort-Object -Property EndTime
             
-    Write-Output "Collecting jobs data... Done."
+    Write-Verbose "Collecting jobs data... Done."
 
     if ($Jobs.Count -eq 0) {
-        Write-Output "Could not find any jobs."
+        Write-Verbose "Could not find any jobs."
         Write-Warning "Could not find any jobs."
         return
     }
     else {
-        Write-Output "Logging $($Jobs.Count) jobs..."
+        Write-Verbose "Logging $($Jobs.Count) jobs..."
     }
 
     # Check if job exists
@@ -191,10 +191,10 @@ function Export-AatAutomationRunbookLog {
         $LogObjParams | ConvertTo-Json -Depth 100 | Set-Content -Path $LogPath -Force
 
         Set-AzureStorageBlobContent -File $LogPath -Container $StorageContainerName -Blob $JobBlobPath -Context $StorageContext | Out-Null
-        Write-Output "Successfully uploaded log: '$JobBlobPath'"
+        Write-Verbose "Successfully uploaded log: '$JobBlobPath'"
         Remove-Item -Path $LogPath -Force
     }
 
 
-    Write-Output "Finished harvesting logs."
+    Write-Verbose "Finished harvesting logs."
 }

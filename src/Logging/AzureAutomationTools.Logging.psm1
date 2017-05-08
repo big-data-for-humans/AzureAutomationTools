@@ -14,6 +14,11 @@ function Export-AatAutomationRunbookLog {
         [string]
         $AutomationAccountName,
 
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [string]
+        $StorageAccountResourceGroupName = $ResourceGroupName,
+
         # Storage account name to post the logs to
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
@@ -91,7 +96,7 @@ function Export-AatAutomationRunbookLog {
     #endregion
 
     $KeySplat = @{
-        ResourceGroupName = $ResourceGroupName
+        ResourceGroupName = $StorageAccountResourceGroupName
         Name = $StorageAccountName
     }
     $StorageAccountKeyObj = (Get-AzureRmStorageAccountKey @KeySplat)

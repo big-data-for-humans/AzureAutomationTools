@@ -889,13 +889,18 @@ function DeployAssets {
 function DeployModules {
     [CmdletBinding(PositionalBinding = $false)]
     param(
+        # The path of the current package folder
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [string]$Path,
 
+        # The maximum number of times the cmdlet should test the module status before failing
         [Parameter()]
-        [ValidateNotNullOrEmpty()]
-        [int]$MaxModulePoll = 100
+        [int]$MaxPollAttempts = 100,
+
+        # The time in seconds to wait between poll attempts
+        [Parameter()]
+        [int]$PollInterval = 10
     )
 
     $ModulesRoot = Join-Path -Path $Path -ChildPath 'modules'
@@ -952,16 +957,16 @@ function DeployModules {
             if ($null -ne $AutomationModule) {
                 $PollCount = 0
                 # Wait by default (for dependency purposes). TODO: Add this to the module config
-                while($PollCount -lt $MaxModulePoll -and 
+                while($PollCount -lt $MaxPollAttempts -and 
                     $AutomationModule.ProvisioningState -ne 'Succeeded' -and
                     $AutomationModule.ProvisioningState -ne 'Failed') {
                         $PollCount++
-                        Start-Sleep -Seconds 10
+                        Start-Sleep -Seconds $PollInterval
                         Write-Verbose "Polling for $($Module.Name) completion..."
                         $AutomationModule = $AutomationModule | Get-AzureRmAutomationModule
                 }
 
-                if ($PollCount -eq $MaxModulePoll -and 
+                if ($PollCount -eq $MaxPollAttempts -and 
                     $AutomationModule.ProvisioningState -ne 'Succeeded' -and
                     $AutomationModule.ProvisioningState -ne 'Failed') {
                     Write-Error -Message "Failed to upload module: $($Module.Name) - PollCount reached max limit."

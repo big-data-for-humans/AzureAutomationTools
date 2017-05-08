@@ -599,8 +599,8 @@ function New-AatModulesFile {
                     Package = 'https://devopsgallerystorage.blob.core.windows.net/packages/azurerm.profile.2.7.0.nupkg'
                 },
                 [ordered]@{
-                    Name = 'CustomPackage'
-                    Package = 'https://[storageaccountname].blob.core.windows.net/[ContainerName]/CustomPackage.zip'
+                    Name = 'AwesomeModule'
+                    Package = 'https://awesomestorageaccount.blob.core.windows.net/awesomecontainer/AwesomeModule.zip'
                 }
             )
         }

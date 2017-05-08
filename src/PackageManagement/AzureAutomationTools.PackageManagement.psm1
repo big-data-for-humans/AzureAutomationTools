@@ -969,12 +969,12 @@ function DeployModules {
                 if ($PollCount -eq $MaxPollAttempts -and 
                     $AutomationModule.ProvisioningState -ne 'Succeeded' -and
                     $AutomationModule.ProvisioningState -ne 'Failed') {
-                    Write-Error -Message "Failed to upload module: $($Module.Name) - PollCount reached max limit."
+                    throw "Failed to upload module: $($Module.Name) - PollCount reached max limit."
                     continue
                 }
 
                 if ($AutomationModule.ProvisioningState -eq 'Failed') {
-                    Write-Error -Message "Failed to upload module: $($Module.Name) - ProvisioningState Failed"
+                    throw "Failed to upload module: $($Module.Name) - ProvisioningState Failed"
                     continue
                 }
             }

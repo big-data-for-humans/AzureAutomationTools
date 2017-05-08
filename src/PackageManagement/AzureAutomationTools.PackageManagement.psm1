@@ -596,11 +596,11 @@ function New-AatModulesFile {
                 [ordered]@{
                     Name = 'AzureRm.Profile'
                     Version = '2.7.0'
-                    ContentUri = 'https://devopsgallerystorage.blob.core.windows.net/packages/azurerm.profile.2.7.0.nupkg'
+                    ContentLink = 'https://devopsgallerystorage.blob.core.windows.net/packages/azurerm.profile.2.7.0.nupkg'
                 },
                 [ordered]@{
                     Name = 'AwesomeModule'
-                    ContentUri = 'https://awesomestorageaccount.blob.core.windows.net/awesomecontainer/AwesomeModule.zip'
+                    ContentLink = 'https://awesomestorageaccount.blob.core.windows.net/awesomecontainer/AwesomeModule.zip'
                 }
             )
         }
@@ -638,7 +638,7 @@ function Add-AatPackageModule {
                     ParameterSetName = 'PSGalleryModule
         ')]
         [string]
-        $ContentUri
+        $ContentLink
     )
 
     dynamicparam{
@@ -689,7 +689,7 @@ function Add-AatPackageModule {
             $ModuleObj = @{
                 Name = $Name
                 Version = $Version
-                ContentUri = $ContentUri
+                ContentLink = $ContentLink
             }
         }
 
@@ -924,7 +924,7 @@ function DeployModules {
         $ExistingModules = (Get-AzureRmAutomationModule @CommonParameters| Select-Object 'Name', 'Version');
             
         foreach ($Module in $Modules) {
-            $ContentLink = $Module.ContentUri
+            $ContentLink = $Module.ContentLink
             $Params = @{Name = $Module.Name;}
             $Params += $CommonParameters
             $AutomationModule = $null
@@ -947,7 +947,7 @@ function DeployModules {
             }
             elseif ($ExistingModule.Version -ne $Module.Version) {
                 Write-Output "Changing existing module: $($Module.Name) $($ExistingModule.Version) --> $($Module.Version)"
-                $AutomationModule = Set-AzureRmAutomationModule -ContentLinkUri $Module.ContentUri -ContentLinkVersion $Module.Version @Params
+                $AutomationModule = Set-AzureRmAutomationModule -ContentLinkUri $Module.ContentLink -ContentLinkVersion $Module.Version @Params
             }
             else {
                 Write-Output "Module up to date: $($Module.Name) $($Module.Version)"
@@ -1105,7 +1105,7 @@ function GetModuleBlob {
         [string]
         $Version,
 
-        # @{Name=<Name>; Version=<Version>; ContentUri=<ContentUri>;}
+        # @{Name=<Name>; Version=<Version>; ContentLink=<ContentLink>;}
         [Parameter(Mandatory = $true,
                     ParameterSetName = 'ByModuleList')]
         [hashtable[]]
@@ -1168,9 +1168,9 @@ function GetModuleBlob {
             $Entry = @{
                 Name = $Name
                 Version = $Version
-                ContentUri = $ModuleContentUrl
+                ContentLink = $ModuleContentUrl
             }
-            Write-Verbose -Message "Inserting into FinalList: @{Name=$Name; Version=$Version; ContentUri=$ModuleContentUrl}"
+            Write-Verbose -Message "Inserting into FinalList: @{Name=$Name; Version=$Version; ContentLink=$ModuleContentUrl}"
             $FinalList.Insert(0, $Entry)
         }
 

@@ -193,6 +193,18 @@ function Export-AatAutomationRunbookLog {
         Set-AzureStorageBlobContent -File $LogPath -Container $StorageContainerName -Blob $JobBlobPath -Context $StorageContext | Out-Null
         Write-Verbose "Successfully uploaded log: '$JobBlobPath'"
         Remove-Item -Path $LogPath -Force
+
+        # Write literal hash to output stream
+        [pscustomobject]@{
+            JobId = $Job.JobId
+            ResourceGroupName = $ResourceGroupName
+            AutomationAccountName = $AutomationAccountName
+            RunbookName = $Job.RunbookName
+            StorageAccountName = $StorageAccountName
+            StorageContainerName = $StorageContainerName
+            BlobPath = $JobBlobPath
+            LogData = $LogObjParams
+        }
     }
 
 

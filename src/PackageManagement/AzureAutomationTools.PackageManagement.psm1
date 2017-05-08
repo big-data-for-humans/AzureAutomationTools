@@ -937,7 +937,7 @@ function DeployModules {
                 $ExistingModule = $null
             }
 
-            if ($null -eq $ExistingModule) {
+            if (-not $ExistingModule) {
                 Write-Output "Adding new module: $($Module.Name) $($Module.Version)"
                 $AutomationModule = New-AzureRmAutomationModule -ContentLink $ContentLink @Params
             }
@@ -1123,7 +1123,7 @@ function GetModuleBlob {
         $FinalList
     )
 
-    if ($null -eq $FinalList) {
+    if (-not $FinalList) {
         Write-Verbose "Creating FinalList"
         $FinalList = [System.Collections.Generic.List[hashtable]]::new()
     }

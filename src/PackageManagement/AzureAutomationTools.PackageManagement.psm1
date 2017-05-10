@@ -617,7 +617,7 @@ function New-AatModulesFile {
 }
 
 function Add-AatPackageModule {
-    [CmdletBinding(DefaultParameterSetName = 'CustomModule')]
+    [CmdletBinding(DefaultParameterSetName = 'PSGalleryModule')]
     param (
         [Parameter(Mandatory = $true,
                     Position = 2)]
@@ -635,8 +635,7 @@ function Add-AatPackageModule {
 
         [Parameter(Mandatory = $true,
                     Position = 4,
-                    ParameterSetName = 'PSGalleryModule
-        ')]
+                    ParameterSetName = 'CustomModule')]
         [string]
         $ContentLink
     )
@@ -682,7 +681,7 @@ function Add-AatPackageModule {
         $ModuleFileObj = Get-Content -Raw -Path $ModuleFilePath | 
             ConvertFrom-Json
 
-        if ($PSCmdlet.ParameterSetName -eq 'CustomModule') {
+        if ($PSCmdlet.ParameterSetName -eq 'PSGalleryModule') {
             $ModuleObj = GetModuleBlob -ModuleList @{Name = $Name; Version = $Version}
         } 
         else {

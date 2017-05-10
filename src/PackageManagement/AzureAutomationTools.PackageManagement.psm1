@@ -636,6 +636,7 @@ function Add-AatPackageModule {
         [Parameter(Mandatory = $true,
                     Position = 4,
                     ParameterSetName = 'CustomModule')]
+        [ValidatePattern('^(http|https)\:\/\/.{1,}\..{1,}\/.{1,}$')]
         [string]
         $ContentLink
     )

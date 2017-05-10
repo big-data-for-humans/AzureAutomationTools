@@ -899,7 +899,7 @@ function DeployModules {
 
         # The time in seconds to wait between poll attempts
         [Parameter()]
-        [int]$PollInterval = 10
+        [int]$PollIntervalSeconds = 10
     )
 
     $ModulesRoot = Join-Path -Path $Path -ChildPath 'modules'
@@ -960,7 +960,7 @@ function DeployModules {
                     $AutomationModule.ProvisioningState -ne 'Succeeded' -and
                     $AutomationModule.ProvisioningState -ne 'Failed') {
                         $PollCount++
-                        Start-Sleep -Seconds $PollInterval
+                        Start-Sleep -Seconds $PollIntervalSeconds
                         Write-Verbose "Polling for $($Module.Name) completion..."
                         $AutomationModule = $AutomationModule | Get-AzureRmAutomationModule
                 }

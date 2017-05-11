@@ -612,6 +612,28 @@ function Add-AatPackageVariable {
     }
 }
 
+function ValidateRunbook {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [ValidatePattern('^.+\.ps1$')]
+        [string]
+        $Name
+    )
+
+    # Throws if path doesn't exist
+    $Path = Resolve-Path -Path (Join-Path -Path (Get-AatPackageFolderPath -Runbooks) -ChildPath $Name)
+
+    $ParseErrors = @()
+    [System.Management.Automation.Language.Parser]::ParseFile($Path, [ref]$null, [ref]$ParseErrors) | Out-Null
+    if ($ParseErrors) {
+        # throw as there should be no errors
+        Write-Error -Message "Runbook '$Path' failed to validate due to parsing errors:`n`n$([String]::Join("`n`n", $ParseErrors))" -ErrorAction Continue
+        $false
+    }
+    $true
+}
+
 function DeployRunbooks {
     [CmdletBinding()]
     param(
@@ -641,9 +663,16 @@ function DeployRunbooks {
         Write-Warning -Message "No runbooks found in $RunbooksRoot matching $Filter"    
     }
 
+    # Do validation in a seperate foreach to fail before uploading anything
+    if (($Runbooks | ForEach-Object {
+        ValidateRunbook -Name $_
+    }) -contains $false) {
+        throw "Failed to validate runbooks."
+    }
+
     $Runbooks | ForEach-Object {
         $CommonParameters
-        
+
         $ExistingRunbooks = @()
         $ExistingRunbooks += (Get-AzureRmAutomationRunbook @CommonParameters| Select-Object Name) | ForEach-Object {$_.Name}
         

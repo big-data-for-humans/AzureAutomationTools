@@ -10,7 +10,7 @@ Set-Variable -Scope Script -Name 'CertificatesPropertyName' -Option 'Constant' -
 $Script:Options = @{
     AssetsFolderName = 'assets'
     ModulesFolderName = 'modules'
-    RunbooksFolderName = 'runbooks'    
+    RunbooksFolderName = 'runbooks'
     AssetsFileName = 'assets.json'
     JsonAssetDepth = 4
     Encoding = 'UTF8'
@@ -20,14 +20,14 @@ $Script:WorkingFolder = ''
 $Script:WorkingPackage = ''
 
 class PackageTestResult {
-    [ValidateNotNullOrEmpty()]        
-    [string] $Message     
+    [ValidateNotNullOrEmpty()]
+    [string] $Message
     [ValidateSet('Error', 'Warning')]
     [string] $Severity
-    
+
     PackageTestResult (
-        [string] $Message,    
-        [string] $Severity        
+        [string] $Message,
+        [string] $Severity
     ) {
         $this.Message = $Message
         $this.Severity = $Severity
@@ -35,10 +35,10 @@ class PackageTestResult {
 }
 
 function Get-AatWorkingFolder {
-    $ret = $Script:WorkingFolder 
+    $ret = $Script:WorkingFolder
 
     if (-not $Script:WorkingFolder) {
-        throw "Working folder not set. Please set using Set-AatWorkingFolder." 
+        throw "Working folder not set. Please set using Set-AatWorkingFolder."
     }
 
     $ret
@@ -49,21 +49,21 @@ function Set-AatWorkingFolder {
     param (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [string]$Path                
+        [string]$Path
     )
 
-    if ($PSCmdlet.ShouldProcess("$Path", 'Set working folder' )) {            
+    if ($PSCmdlet.ShouldProcess("$Path", 'Set working folder' )) {
         $Script:WorkingFolder = (Resolve-Path -Path $Path).Path
     }
 }
 
 function Get-AatWorkingPackage {
     [CmdletBinding()]
-    param()    
-    
+    param()
+
     $ret = $Script:WorkingPackage
 
-    if (-not $Script:WorkingPackage) {        
+    if (-not $Script:WorkingPackage) {
         Write-Verbose -Message "No working package set - using first folder in $Script:WorkingFolder"
         $ret = (Get-ChildItem -Directory -Path (Get-AatWorkingFolder) | Sort-Object Name | Select-Object -First 1 -ExpandProperty Name)
     }
@@ -77,13 +77,13 @@ function Set-AatWorkingPackage {
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [Alias('pn')]
-        [string]$PackageName                
+        [string]$PackageName
     )
 
-    if ($PSCmdlet.ShouldProcess("$PackageName", 'Set working package' )) {            
+    if ($PSCmdlet.ShouldProcess("$PackageName", 'Set working package' )) {
         if (-not (Test-Path -Path (Join-path -Path (Get-AatWorkingFolder) -ChildPath $PackageName))) {
             throw "Cannot set working package to [$PackageName] - the folder does not exist in [$(Get-AatWorkingFolder)]"
-        }    
+        }
 
         $Script:WorkingPackage = $PackageName
     }
@@ -101,7 +101,7 @@ function Set-AatPackageOption {
         [ValidateNotNullOrEmpty()]
         [Alias('mfn')]
         [string]$ModulesFolderName,
-        
+
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [Alias('rfn')]
@@ -110,18 +110,18 @@ function Set-AatPackageOption {
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [string]$AssetsFileName,
-        
+
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [Alias('jad')]
         [int]$JsonAssetDepth,
-        
+
         [Parameter(Mandatory = $false)]
         [ValidateSet('Unicode', 'UTF8')]
-        [string]$Encoding        
+        [string]$Encoding
     )
 
-    if ($PSCmdlet.ShouldProcess("", 'Set package option' )) {            
+    if ($PSCmdlet.ShouldProcess("", 'Set package option' )) {
         if ($AssetsFolderName) {
             $Script:Options.AssetsFolderName = $AssetsFolderName
         }
@@ -148,16 +148,16 @@ function Set-AatPackageOption {
 
         if ($Encoding) {
             $Script:Options.Encoding = $Encoding
-        }    
+        }
     }
 }
 
 
 function Get-AatPackageOption {
-    [OutputType('System.Collections.HashTable')] 
+    [OutputType('System.Collections.HashTable')]
     [CmdletBinding()]
-    param()    
-    
+    param()
+
     $Script:Options
 }
 
@@ -166,29 +166,29 @@ function Get-AatPackagePath {
     param(
         [Alias('pn')]
         [string]$PackageName
-    )    
-    
+    )
+
     $WorkingFolderPath = Get-AatWorkingFolder
 
     if (-not $PackageName) {
         $PackageName = Get-AatWorkingPackage
     }
-    
+
     $PackagePath = (Join-Path -Path $WorkingFolderPath -ChildPath $PackageName)
     $PackagePath
 }
 
-function Get-AatPackageFolderPath {    
+function Get-AatPackageFolderPath {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory = $true, ParameterSetName = 'Assets')]
         [Alias('a')]
         [switch]$Assets,
-        
+
         [Parameter(Mandatory = $true, ParameterSetName = 'Modules')]
         [Alias('m')]
         [switch]$Modules,
-        
+
         [Parameter(Mandatory = $true, ParameterSetName = 'Runbooks')]
         [Alias('rb')]
         [switch]$Runbooks,
@@ -202,14 +202,14 @@ function Get-AatPackageFolderPath {
 
     if (-not $PackageName) {
         $PackagePath = Get-AatPackagePath
-    } 
+    }
     else {
         $PackagePath = Get-AatPackagePath -PackageName $PackageName
     }
 
-    
+
     $FolderName = $null
-    
+
     switch ($true) {
         $Assets.IsPresent { $FolderName = $Script:Options.AssetsFolderName }
         $Modules.IsPresent { $FolderName = $Script:Options.ModulesFolderName }
@@ -229,58 +229,58 @@ function Get-AatPackageFolderPath {
 
 function New-AatAutomationPackage {
     [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'Medium')]
-    param (        
+    param (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [string]$Name,        
+        [string]$Name,
 
         [Alias('dcaf')]
         [Switch]$DontCreateAssetsFile,
-        
+
         [Alias('is')]
         [Switch]$IncludeSamples
     )
-    
-    if ($PSCmdlet.ShouldProcess("$Name", 'Create automation package' )) {                        
+
+    if ($PSCmdlet.ShouldProcess("$Name", 'Create automation package' )) {
         $Path = Get-AatWorkingFolder
-                    
+
         Write-Verbose "Creating package folder [$Name] in '$Path' ..."
-        
+
         $RootPath = (Join-Path -Path $Path -ChildPath $Name)
-                
+
         if (Test-Path -Path $RootPath) {
             if ((Get-ChildItem -Path $RootPath)) {
                 throw "Cannot create package folder - path [$RootPath] aleady exists and is not empty."
-            } 
+            }
         }
         else {
             New-Item -Path $RootPath -ItemType 'Directory' | Out-Null
         }
-        
+
         Set-AatWorkingPackage -PackageName $Name
 
-        $AssetsPath = Get-AatPackageFolderPath -Assets        
+        $AssetsPath = Get-AatPackageFolderPath -Assets
         $ModulesPath = Get-AatPackageFolderPath -Modules
         $RunbooksPath = Get-AatPackageFolderPath -Runbooks
 
         $AssetsPath, $ModulesPath, $RunbooksPath | ForEach-Object {
             if ($_ -ne $RootPath) {
                 Write-Verbose -Message "Creating folder '$_' ..."
-                        
+
                 New-Item $_ -ItemType 'Directory' | Out-Null
-                
+
                 Write-Verbose -Message "Creating folder '$_' - done."
             }
         }
-        
+
         if (-not $DontCreateAssetsFile.IsPresent) {
             New-AatAssetsFile -Name $Script:Options.AssetsFileName -IncludeVariables -IncludeCredentials
         }
 
         if ($IncludeSamples.IsPresent) {
             Write-Verbose "Creating samples ..."
-            
-            $SampleAssetsFileName = 'sample-assets.json'         
+
+            $SampleAssetsFileName = 'sample-assets.json'
             New-AatAssetsFile -Name $SampleAssetsFileName -All
             Add-AatPackageVariable -AssetsFileName $SampleAssetsFileName -Name 'simple-plaintext-variable'  -Value 'lorem'
             Add-AatPackageVariable -AssetsFileName $SampleAssetsFileName -Name 'simple-encrypted-variable'  -IsEncrypted
@@ -295,18 +295,18 @@ function New-AatAutomationPackage {
             Write-Verbose "Creating samples - done."
         }
 
-        Write-Verbose "Creating package folder [$Name] in '$Path' - done"    
+        Write-Verbose "Creating package folder [$Name] in '$Path' - done"
     }
 }
 
 function Test-AatAutomationPackage {
     [CmdletBinding()]
-    param(    
+    param(
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [Alias('pn')]
         [string]$PackageName,
-        
+
         [Alias('iw')]
         [switch]$IgnoreWarnings
     )
@@ -314,7 +314,7 @@ function Test-AatAutomationPackage {
     [PackageTestResult[]]$TestResults = @()
     $WorkingFolder = Get-AatWorkingFolder
 
-    Write-Verbose -Message "Working folder: '$WorkingFolder)'"    
+    Write-Verbose -Message "Working folder: '$WorkingFolder)'"
 
     if (-not $PackageName) {
         $PackageName = Get-AatWorkingPackage
@@ -335,13 +335,13 @@ function Test-AatAutomationPackage {
     if (-not (Test-Path -Path $ModulesPath)) {
         $TestResults += New-Object -TypeName PackageTestResult -ArgumentList "Package folder [Modules] '$ModulesPath' not found", 'Error'
     }
-    
+
     $RunbooksPath = Get-AatPackageFolderPath -Runbooks -PackageName $PackageName
 
     if (-not (Test-Path -Path $RunbooksPath)) {
         $TestResults += New-Object -TypeName PackageTestResult -ArgumentList "Package folder [Runbooks] '$RunbooksPath' not found", 'Error'
     }
-    
+
     Write-Verbose -Message "Testing package folders - done."
 
     Write-Verbose -Message "Testing assets ..."
@@ -355,8 +355,8 @@ function Test-AatAutomationPackage {
 
         Get-ChildItem -Path $AssetsPath -File | ForEach-Object {
             $AssetsFilePath = $_.FullName
-            
-            Write-Verbose "Testing assets file '$AssetsFilePath' ..." 
+
+            Write-Verbose "Testing assets file '$AssetsFilePath' ..."
 
             $Assets = Get-Content -Raw -Path $AssetsFilePath | ConvertFrom-Json -ErrorAction Ignore
 
@@ -366,53 +366,53 @@ function Test-AatAutomationPackage {
             else {
                 [string[]]$ExpectedProperties = 'Certificates', 'Credentials', 'Variables', 'Connections'
                 [string[]]$Properties = @()
-                $Properties += $Assets.psobject.Properties | Select-Object -ExpandProperty Name                
+                $Properties += $Assets.psobject.Properties | Select-Object -ExpandProperty Name
                 $Intersection = (Compare-Object -ReferenceObject $ExpectedProperties -DifferenceObject $Properties -IncludeEqual -ExcludeDifferent)
-                
+
                 if (-not $Intersection) {
                     $TestResults += New-Object -TypeName PackageTestResult -ArgumentList "Assets file '$AssetsFilePath' does not contain any of the supported properties ('Certificates', 'Credentials', 'Variables', 'Connections')", 'Error'
                 }
 
                 $UnsupportedProperties = (Compare-Object -ReferenceObject $ExpectedProperties -DifferenceObject $Properties | Where-Object SideIndicator -EQ '=>')
-                
+
                 $UnsupportedProperties | ForEach-Object {
                     $TestResults += New-Object -TypeName PackageTestResult -ArgumentList "Assets file '$AssetsFilePath' contains unsupported property [$($_.InputObject)]", 'Error'
-                }                
-                
+                }
+
                 if ($Assets.psobject.properties | Where-Object Name -eq 'Variables') {
                     $i = 0
 
                     $Assets.Variables | ForEach-Object {
                         $i++
                         if (-not ($_.psobject.properties | Where-Object Name -eq 'Name')) {
-                            $TestResults += New-Object -TypeName PackageTestResult -ArgumentList "Variable definition [$i] in '$AssetsFilePath' missing required property [Name]", 'Error'                    
+                            $TestResults += New-Object -TypeName PackageTestResult -ArgumentList "Variable definition [$i] in '$AssetsFilePath' missing required property [Name]", 'Error'
                         }
 
                         if (-not ($_.psobject.properties | Where-Object Name -eq 'Value')) {
-                            $TestResults += New-Object -TypeName PackageTestResult -ArgumentList "Variable definition [$i] in '$AssetsFilePath' missing required property [Value]", 'Error'                    
+                            $TestResults += New-Object -TypeName PackageTestResult -ArgumentList "Variable definition [$i] in '$AssetsFilePath' missing required property [Value]", 'Error'
                         }
 
                         if (-not ($_.psobject.properties | Where-Object Name -eq 'IsEncrypted')) {
-                            $TestResults += New-Object -TypeName PackageTestResult -ArgumentList "Variable definition [$i] in '$AssetsFilePath' missing required property [IsEncrypted]", 'Error'                    
+                            $TestResults += New-Object -TypeName PackageTestResult -ArgumentList "Variable definition [$i] in '$AssetsFilePath' missing required property [IsEncrypted]", 'Error'
                         }
-                    
+
                         ($_.psobject.properties | Where-Object Name -notin 'Name', 'Value', 'IsEncrypted' | Select-Object -ExpandProperty 'Name') | ForEach-Object {
                             $TestResults += New-Object -TypeName PackageTestResult -ArgumentList "Variable definition [$i] in '$AssetsFilePath' contains unsupported property [$_]", 'Error'
                         }
                     }
-                    
+
                     $Assets.Variables | Where-Object {$_.psobject.Properties.name -eq 'Name'} |  Select-Object -ExpandProperty 'Name' | Group-Object  | Where-Object Count -GT 1 | ForEach-Object {
                         $TestResults += New-Object -TypeName PackageTestResult -ArgumentList "Assets file '$AssetsFilePath' contains duplicate defintion of variable [$_]", 'Error'
-                    }                    
+                    }
                 }
-            }     
+            }
 
-            Write-Verbose "Testing assets file '$AssetsFilePath' - done."             
+            Write-Verbose "Testing assets file '$AssetsFilePath' - done."
         }
     }
 
     Write-Verbose -Message "Testing modules ..."
-    
+
     if (Test-Path -Path $ModulesPath) {
         $ModuleFiles = (Get-ChildItem -Path $ModulesPath -File)
 
@@ -427,16 +427,16 @@ function Test-AatAutomationPackage {
                 $Modules = Get-Content -Raw -Path $ModulesFilePath | ConvertFrom-Json -ErrorAction Ignore
 
                 if (-not $Modules) {
-                    $TestResults += New-Object -TypeName PackageTestResult -ArgumentList "Modules file '$ModulesFilePath' does not contain valid json.", 'Error'                    
-                }                
+                    $TestResults += New-Object -TypeName PackageTestResult -ArgumentList "Modules file '$ModulesFilePath' does not contain valid json.", 'Error'
+                }
             }
         }
     }
-    
+
     Write-Verbose -Message "Testing modules - done."
 
     Write-Verbose -Message "Testing runbooks ..."
-    
+
     if (Test-Path -Path $RunbooksPath) {
         $RunbookFiles = (Get-ChildItem -Path $RunbooksPath -File)
 
@@ -446,9 +446,9 @@ function Test-AatAutomationPackage {
             }
         }
     }
-    
+
     Write-Verbose -Message "Testing modules - done."
-    
+
     $TestResults
 }
 
@@ -462,19 +462,19 @@ function New-AatAssetsFile {
         [Parameter(Mandatory = $false, ParameterSetName = 'ChooseAssets')]
         [Alias('vars')]
         [switch]$IncludeVariables,
-        
+
         [Parameter(Mandatory = $false, ParameterSetName = 'ChooseAssets')]
         [Alias('creds')]
         [switch]$IncludeCredentials,
-        
+
         [Parameter(Mandatory = $false, ParameterSetName = 'ChooseAssets')]
         [Alias('certs')]
         [switch]$IncludeCertificates,
-        
+
         [Parameter(Mandatory = $false, ParameterSetName = 'ChooseAssets')]
-        [Alias('conns')]        
+        [Alias('conns')]
         [switch]$IncludeConnections,
-        
+
         [Parameter(Mandatory = $true, ParameterSetName = 'AllAssets')]
         [switch]$All
     )
@@ -482,7 +482,7 @@ function New-AatAssetsFile {
         $Name = $Script:Options.AssetsFileName
     }
 
-    if ($PSCmdlet.ShouldProcess("$Name", 'Create assets file' )) {                        
+    if ($PSCmdlet.ShouldProcess("$Name", 'Create assets file' )) {
         $Assets = @{}
 
         if ($All.IsPresent -or $IncludeVariables.IsPresent) {
@@ -500,7 +500,7 @@ function New-AatAssetsFile {
         if ($All.IsPresent -or $IncludeConnections.IsPresent) {
             $Assets.Add($Script:ConnectionsPropertyName, @())
         }
-        
+
         $AssetsFilePath = Join-Path -Path (Get-AatPackageFolderPath -Assets) -ChildPath $Name
 
         Write-Verbose -Message "Creating assets file '$AssetsFilePath' ..."
@@ -517,61 +517,61 @@ function New-AatAssetsFile {
 }
 
 function New-AatPackageVariable {
-    [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'Low')]    
+    [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'Low')]
     param (
         [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]        
+        [ValidateNotNullOrEmpty()]
         [string]$Name,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'Plain')]
         [ValidateNotNullOrEmpty()]
-        
+
         [Object]$Value,
-        
-        [Parameter(Mandatory = $true, ParameterSetName = 'Encrypted')]        
-        
+
+        [Parameter(Mandatory = $true, ParameterSetName = 'Encrypted')]
+
         [switch]$IsEncrypted,
-        
+
         [switch]$AsJson
     )
-    
-    if ($PSCmdlet.ShouldProcess("$Name", 'Create variable definition' )) {         
+
+    if ($PSCmdlet.ShouldProcess("$Name", 'Create variable definition' )) {
         $Variable = [pscustomobject]@{
             Name = $Name
             IsEncrypted = $IsEncrypted.IsPresent
             Value = $Value
-        }             
+        }
 
         $ret = $Variable
 
         if ($AsJson.IsPresent) {
             $ret = $ret | ConvertTo-Json -Depth $Script:Options.JsonAssetDepth
-        }                
-        
+        }
+
         $ret
     }
 }
 
 function Add-AatPackageVariable {
-    [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'Low')]    
+    [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'Low')]
     param (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [string]$Name,        
-        
+        [string]$Name,
+
         [Parameter(Mandatory = $true, ParameterSetName = 'Plain')]
         [ValidateNotNullOrEmpty()]
         [object]$Value,
 
-        [Parameter(Mandatory = $true, ParameterSetName = 'Encrypted')]        
+        [Parameter(Mandatory = $true, ParameterSetName = 'Encrypted')]
         [switch]$IsEncrypted,
-        
+
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [string]$AssetsFileName              
+        [string]$AssetsFileName
     )
 
-    if ($PSCmdlet.ShouldProcess("$Name", 'Add variable definition' )) {         
+    if ($PSCmdlet.ShouldProcess("$Name", 'Add variable definition' )) {
         $NewVariableParams = @{
             Name = $Name
         }
@@ -583,7 +583,7 @@ function Add-AatPackageVariable {
         if ($PsCmdlet.ParameterSetName -eq 'Encrypted') {
             $NewVariableParams.Add('IsEncrypted', $IsEncrypted.IsPresent)
         }
-        
+
         $Variable = New-AatPackageVariable @NewVariableParams
 
         Write-verbose -Message "Working folder: '$(Get-AatWorkingFolder)'"
@@ -592,9 +592,9 @@ function Add-AatPackageVariable {
         if (-not $AssetsFileName) {
             $AssetsFileName = $Script:Options.AssetsFileName
         }
-        
+
         Write-verbose -Message "Assets file: [$AssetsFileName]"
-        
+
         $AssetsFolderPath = (Get-AatPackageFolderPath -Assets)
         $AssetsFilePath = Join-Path -Path $AssetsFolderPath -ChildPath $AssetsFileName
 
@@ -603,12 +603,12 @@ function Add-AatPackageVariable {
         $Assets = Get-Content -Raw -Path $AssetsFilePath | ConvertFrom-Json
 
         if (($Assets.Variables | Where-Object Name -eq $Name)) {
-            throw "Cannot add variable [$Name], '$AssetsFilePath' already contains a definition for [$Name]."        
+            throw "Cannot add variable [$Name], '$AssetsFilePath' already contains a definition for [$Name]."
         }
-        
+
         $Assets.Variables += $Variable
         $Json = $Assets | ConvertTo-Json -Depth ($Script:Options.JsonAssetDepth + 2)
-        $Json | Out-File -FilePath $AssetsFilePath -Encoding $Script:Options.Encoding 
+        $Json | Out-File -FilePath $AssetsFilePath -Encoding $Script:Options.Encoding
     }
 }
 
@@ -618,10 +618,10 @@ function DeployRunbooks {
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [string]$Path,
-        
+
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [ValidatePattern('^.*\.ps1$')]        
+        [ValidatePattern('^.*\.ps1$')]
         [string]$Filter
     )
 
@@ -638,27 +638,27 @@ function DeployRunbooks {
     $Runbooks = Get-ChildItem -Path $RunbooksRoot -File -Filter $Filter
 
     if (-not $Runbooks) {
-        Write-Warning -Message "No runbooks found in $RunbooksRoot matching $Filter"    
+        Write-Warning -Message "No runbooks found in $RunbooksRoot matching $Filter"
     }
 
     $Runbooks | ForEach-Object {
         $CommonParameters
-        
+
         $ExistingRunbooks = @()
         $ExistingRunbooks += (Get-AzureRmAutomationRunbook @CommonParameters| Select-Object Name) | ForEach-Object {$_.Name}
-        
+
         if ($ExistingRunbooks.Contains($_.BaseName)) {
             Write-Output "Removing existing runbook $($_.BaseName) ..."
-            
+
             Remove-AzureRmAutomationRunbook @CommonParameters -Name $_.BaseName -Force
-            
+
             Write-Output "Removing existing runbook $($_.BaseName) - done."
         }
-        
+
         Write-Output "Importing runbook $($_.BaseName) ..."
-        
-        Import-AzureRmAutomationRunbook -Name $_.BaseName -Type 'PowerShell' -Path $_.FullName -Published @CommonParameters 
-        
+
+        Import-AzureRmAutomationRunbook -Name $_.BaseName -Type 'PowerShell' -Path $_.FullName -Published @CommonParameters
+
         Write-Output "Importing runbook $($_.BaseName) - done."
     }
 }
@@ -669,32 +669,32 @@ function DeployAssets {
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [string]$Path,
-        
+
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [ValidatePattern('^.*\.json$')]        
-        [string]$Filter         
+        [ValidatePattern('^.*\.json$')]
+        [string]$Filter
     )
 
     $AssetsRoot = Join-Path -Path $Path -ChildPath 'assets'
-    
-    Write-Output "Assets Root: '$AssetsRoot'"    
+
+    Write-Output "Assets Root: '$AssetsRoot'"
     Write-Output "Filter: [$Filter]"
 
     if (-not (Test-Path $AssetsRoot)) {
         throw "Path not found: '$AssetsRoot'"
     }
-    
+
     $CommonParameters = @{ResourceGroupName = $ResourceGroupName; AutomationAccountName = $AutomationAccountName}
 
     Get-ChildItem -Path $AssetsRoot -File -Filter $Filter | ForEach-Object {
         Write-Output "Assets File: '$($_.FullName)'"
-        #Write-Output (Get-Content $_.FullName -Raw) 
+        #Write-Output (Get-Content $_.FullName -Raw)
         $Assets = Get-Content $_.FullName -Raw | ConvertFrom-Json
-                
+
         $ExistingVariables = @()
         $ExistingVariables += (Get-AzureRmAutomationVariable @CommonParameters| Select-Object Name) | ForEach-Object {$_.Name}
-    
+
         if ($DeployVariables) {
             $Assets.Variables | ForEach-Object {
                 if ($_.IsEncrypted) {
@@ -706,7 +706,7 @@ function DeployAssets {
                 else {
                     $Value = $_.Value | ConvertTo-Json -Depth $JsonAssetDepth
                 }
-            
+
                 $Params = @{Name = $_.Name; Encrypted = $_.IsEncrypted; Value = $Value}
                 $Params += $CommonParameters
 
@@ -725,23 +725,23 @@ function DeployAssets {
 
                     Write-Output "Creating new variable [$($_.Name)] - done."
                 }
-                
+
                 if ($_.IsEncrypted) {
                     Write-Warning "Password must be manually set for variable [$($_.Name)]"
                 }
             }
         }
-        
+
         if ($DeployCredentials) {
             if ($Assets.psobject.properties.Name -notcontains 'Credentials') {
                 Write-Warning "No credentials found in [$($_.FullName)]."
             }
-            else { 
+            else {
                 $ExistingCredentials = @()
                 $ExistingCredentials += (Get-AzureRmAutomationCredential @CommonParameters| Select-Object Name) | ForEach-Object {$_.Name}
 
                 $Assets.Credentials | ForEach-Object {
-                    # See https://github.com/PowerShell/PSScriptAnalyzer/issues/574 
+                    # See https://github.com/PowerShell/PSScriptAnalyzer/issues/574
                     #$Password = [guid]::NewGuid() | ConvertTo-SecureString -asPlainText -Force
                     $Password = [SecureString]::new()
                     (New-Guid).Guid.ToCharArray() | ForEach-Object {$Password.AppendChar($_)} # i.e. definitely not the password
@@ -757,7 +757,7 @@ function DeployAssets {
                         else {
                             Write-Output "Updating existing credential [$($_.Name)] ..."
 
-                            Set-AzureRmAutomationCredential @Params 
+                            Set-AzureRmAutomationCredential @Params
 
                             Write-Output "Updating existing credential [$($_.Name)] - done."
                             Write-Warning "Password must be manually set for credential $($_.Name)"
@@ -767,12 +767,12 @@ function DeployAssets {
                         Write-Output "Creating new credential [$($_.Name)] ..."
 
                         New-AzureRmAutomationCredential @Params
-                    
+
                         Write-Output "Creating new credential [$($_.Name)] - done."
                         Write-Warning "Password must be manually set for credential [$($_.Name)]"
                     }
                 }
-            }        
+            }
         }
     }
 }
@@ -792,8 +792,8 @@ function DeployModules {
     }
 
     Write-Output "Modules Root: '$ModulesRoot'"
-    
-    $ModulesFiles = Get-ChildItem -Path $ModulesRoot -File -Filter '*.json' 
+
+    $ModulesFiles = Get-ChildItem -Path $ModulesRoot -File -Filter '*.json'
 
     if (-not $ModulesFiles) {
         Write-Warning -Message "No modules files found in $ModulesRoot matching '*.json'"
@@ -805,27 +805,29 @@ function DeployModules {
         Write-Output "Modules file: '$($_.FullName)'";
         $Modules = Get-Content $_.FullName -Raw | ConvertFrom-Json;
         $ExistingModules = (Get-AzureRmAutomationModule @CommonParameters| Select-Object 'Name', 'Version');
-            
+
         foreach ($Module in $Modules) {
             $ContentLink = $Module.Package
             $Params = @{Name = $Module.Name; }
             $Params += $CommonParameters
-       
+
             #FIX failing - version property is coming back blank
             if ($ExistingModules.Where( {$_.Name -eq $Module.Name -and $_.Version -eq $Module.Version})) {
                 Write-Output "Existing module up to date - skipping."
             }
-            elseif ($ExistingModules.Where( {$_.Name -eq $Module.Name })) {           
+            elseif ($ExistingModules.Where( {$_.Name -eq $Module.Name })) {
                 Write-Output "Updating existing module ..."
-            
-                Set-AzureRmAutomationModule -ContentLinkUri $ContentLink  @Params
-            
+
+                # Need to use New- rather than Set- as workaround for Set- not working correctly - raised
+                # as an issue: https://github.com/Azure/azure-powershell/issues/5064
+                New-AzureRmAutomationModule -ContentLinkUri $ContentLink @Params
+
                 Write-Output "Updating existing module - done."
             }
             else {
                 Write-Output "Adding new module ..."
-            
-                New-AzureRmAutomationModule -ContentLink $ContentLink @Params
+
+                New-AzureRmAutomationModule -ContentLinkUri $ContentLink @Params
 
                 Write-Output "Adding new module - done."
             }
@@ -834,26 +836,26 @@ function DeployModules {
 }
 
 function Publish-AatAutomationPackage {
-    [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'High', DefaultParameterSetName = 'NamedPackages')]    
+    [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'High', DefaultParameterSetName = 'NamedPackages')]
     param (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [Alias('rg')]
         [string]$ResourceGroupName,
-        
+
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [Alias('aa')]
         [string]$AutomationAccountName,
-        
+
         [Parameter(Mandatory = $false)]
         [Alias('dr')]
-        [Switch]$DeployRunbooks,    
-        
+        [Switch]$DeployRunbooks,
+
         [Parameter(Mandatory = $false)]
         [Alias('dm')]
         [Switch]$DeployModules,
-        
+
         [Parameter(Mandatory = $false)]
         [Alias('dv')]
         [Switch]$DeployVariables,
@@ -865,28 +867,28 @@ function Publish-AatAutomationPackage {
         [Parameter(Mandatory = $false)]
         [Alias('nco')]
         [Switch]$NewCredentialsOnly,
-        
+
         [Parameter(Mandatory = $false)]
         [ValidatePattern('^.+\.ps1$')]
         [Alias('rf')]
         [string]$RunbookFilter = '*.ps1',
-        
+
         [Parameter(Mandatory = $false)]
         [ValidatePattern('^.+\.json$')]
         [Alias('aff')]
         [string]$AssetsFileFilter = '*.json',
-        
+
         [Parameter(Mandatory = $false, ParameterSetName = 'NamedPackages')]
         [ValidateNotNullOrEmpty()]
         [Alias('pn')]
         [string[]]$PackageName,
-        
+
         [Parameter(ParameterSetName = 'AllPackages')]
-        [Alias('All')]        
+        [Alias('All')]
         [switch]$AllPackages
     )
-    
-    Write-Verbose -Message "Parameter set: $($PSCmdlet.ParameterSetName)"    
+
+    Write-Verbose -Message "Parameter set: $($PSCmdlet.ParameterSetName)"
 
     if ($PSCmdlet.ParameterSetName -eq 'NamedPackages') {
         if (-not $PackageName) {
@@ -895,7 +897,7 @@ function Publish-AatAutomationPackage {
     }
     elseif ($PSCmdlet.ParameterSetName -eq 'AllPackages') {
         $PackageName = (Get-ChildItem -Path (Get-AatWorkingFolder) -Directory).Name
-    } 
+    }
     else {
         throw "Unexpected parameter set: $($PSCmdlet.ParameterSetName)"
     }
@@ -905,18 +907,18 @@ function Publish-AatAutomationPackage {
     $PSBoundParameters.GetEnumerator() | ForEach-Object {
         Write-Verbose -Message "$($_.Key): $($_.Value)"
     }
-    
-    $DeployAssets = $DeployVariables -or $DeployCredentials 
+
+    $DeployAssets = $DeployVariables -or $DeployCredentials
 
     if (-not ($DeployRunbooks.IsPresent -or $DeployModules.IsPresent -or $DeployAssets)) {
         Write-Warning -Message "Nothing to deploy, please specify -DeployRunbooks, -DeployModules, -DeployVariables, or -DeployCredentials"
     }
-    elseif ($PSCmdlet.ShouldProcess("$ResourceGroupName/$AutomationAccountName", 'Publish automation packages')) {                        
+    elseif ($PSCmdlet.ShouldProcess("$ResourceGroupName/$AutomationAccountName", 'Publish automation packages')) {
         $Paths = $PackageName | ForEach-Object {
             $Path = Join-Path -Path (Get-AatWorkingFolder) -ChildPath $_ -Resolve
             Write-Verbose -Message "Will publish package: $_  ($Path)"
             $Path
-        }  
+        }
 
         $Paths | ForEach-Object {
             Write-Verbose -Message "Searching '$_'"
@@ -952,8 +954,8 @@ function Publish-AatAutomationPackage {
             }
             else {
                 Set-AzureRmAutomationVariable @Params
-            }            
-            
+            }
+
             Write-Verbose -Message "Searching '$_' - done."
         }
     }

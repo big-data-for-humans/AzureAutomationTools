@@ -820,14 +820,14 @@ function DeployModules {
 
                 # Need to use New- rather than Set- as workaround for Set- not working correctly - raised
                 # as an issue: https://github.com/Azure/azure-powershell/issues/5064
-                New-AzureRmAutomationModule -ContentLinkUri $ContentLink @Params
+                New-AzureRmAutomationModule -ContentLink $ContentLink @Params
 
                 Write-Output "Updating existing module - done."
             }
             else {
                 Write-Output "Adding new module ..."
 
-                New-AzureRmAutomationModule -ContentLinkUri $ContentLink @Params
+                New-AzureRmAutomationModule -ContentLink $ContentLink @Params
 
                 Write-Output "Adding new module - done."
             }

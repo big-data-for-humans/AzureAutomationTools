@@ -704,7 +704,7 @@ function DeployAssets {
                     $Value = $_.Value
                 }
                 else {
-                    $Value = $_.Value | ConvertTo-Json -Depth $JsonAssetDepth
+                    $Value = $_.Value | ConvertTo-Json -Depth $Script:Options.JsonAssetDepth
                 }
 
                 $Params = @{Name = $_.Name; Encrypted = $_.IsEncrypted; Value = $Value}

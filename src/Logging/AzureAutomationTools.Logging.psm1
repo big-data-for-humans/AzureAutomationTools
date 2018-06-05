@@ -123,10 +123,8 @@ function Export-AatAutomationRunbookLog {
             
     Write-Output "Collecting jobs data... Done."
 
-    if ($Jobs.Count -eq 0) {
-        Write-Output "Could not find any jobs."
-        Write-Warning "Could not find any jobs."
-        return
+    if (-not $Jobs) {
+        throw "No jobs could be found on the automation account $ResourceGroupName/$AutomationAccountName"
     }
     else {
         Write-Output "Logging $($Jobs.Count) jobs..."
